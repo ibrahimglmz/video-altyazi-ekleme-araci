@@ -1,4 +1,6 @@
-Tamam! Sana **tek bir embed alanında orijinal ve altyazılı videoyu yan yana gösterecek şekilde** düzenlenmiş, modern ve sade bir README hazırladım. GitHub Markdown, `<video>` etiketi içinde iki video yan yana oynatmayı tam desteklemiyor; bu yüzden **basit bir HTML tablolu yapı** kullanıyoruz.
+Harika! O zaman README’yi **tamamen sadeleştirip, tek videoda orijinal ve altyazılı videoyu yan yana gösterecek bir embed örneği** ile yeniden hazırladım. Ayrıca temel kullanım bilgilerini de içeriyor, GitHub’da direkt kullanabilirsin.
+
+---
 
 ````markdown
 # 🎬 Offline Video Subtitle Generator
@@ -11,8 +13,7 @@ Tamam! Sana **tek bir embed alanında orijinal ve altyazılı videoyu yan yana g
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-orange.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-**AI destekli, tamamen offline altyazı oluşturma aracı**  
-Orijinal video ve altyazılı video yan yana izlenebilir.  
+**AI destekli, tamamen offline çalışan video altyazı oluşturma aracı**  
 
 </div>
 
@@ -21,10 +22,10 @@ Orijinal video ve altyazılı video yan yana izlenebilir.
 ## ✨ Özellikler
 
 - 🤖 AI Destekli Transkripsiyon (Whisper / faster-whisper)  
-- 🌐 Offline Çalışma  
-- 🎨 7 Hazır Altyazı Stili  
-- 📁 Toplu İşlem  
-- 🎵 Ses İyileştirme  
+- 🌐 Tamamen offline çalışma  
+- 🎨 7 profesyonel altyazı stili  
+- 📁 Toplu işlem desteği  
+- 🎵 Otomatik ses iyileştirme  
 - 🎬 Orijinal ve altyazılı videoyu yan yana gösterme  
 
 ### Çıktı Formatları
@@ -48,7 +49,11 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ````
 
-FFmpeg kurulu olmalı (`ffmpeg -version` ile doğrulayın).
+FFmpeg kurulu olmalı:
+
+```bash
+ffmpeg -version
+```
 
 ---
 
@@ -58,7 +63,7 @@ FFmpeg kurulu olmalı (`ffmpeg -version` ile doğrulayın).
 # Basit kullanım
 python app.py -i "Bir Cümleyle Evren Kurmak_ Google Genie 3 Devrimi.mov"
 
-# Video ve altyazı SRT
+# Video ve SRT altyazı
 python app.py -i "Bir Cümleyle Evren Kurmak_ Google Genie 3 Devrimi.mov" --formats video,srt --style cinema
 ```
 
@@ -74,33 +79,32 @@ Tarayıcıdan: `http://127.0.0.1:5000`
 
 ## 🎬 Yan Yana Video Örneği
 
-<table>
-<tr>
-<td>
+**Not:** Videoları tek bir yan yana video hâline getirip göstermek için FFmpeg ile birleştirebilirsiniz:
 
-**Orijinal Video** <video width="350" controls> <source src="Bir Cümleyle Evren Kurmak_ Google Genie 3 Devrimi.mov" type="video/mp4">
-Tarayıcınız video etiketini desteklemiyor. </video>
+```bash
+ffmpeg -i "Bir Cümleyle Evren Kurmak_ Google Genie 3 Devrimi.mov" \
+       -i "Bir_Cumleyle_Evren_Kurmak__Google_Genie_3_Devrimi_20250818_134723_subtitled.mov" \
+       -filter_complex "[0:v]pad=iw*2:ih[int];[int][1:v]overlay=W/2:0[out]" \
+       -map "[out]" side_by_side.mp4
+```
 
-</td>
-<td>
+Sonrasında GitHub README veya HTML sayfasında embed etmek için:
 
-**Altyazılı Video** <video width="350" controls> <source src="Bir_Cumleyle_Evren_Kurmak__Google_Genie_3_Devrimi_20250818_134723_subtitled.mov" type="video/mp4">
-Tarayıcınız video etiketini desteklemiyor. </video>
-
-</td>
-</tr>
-</table>
-
-> İpucu: `--side-by-side` seçeneği ile videoları otomatik olarak yan yana birleştirebilirsiniz.
+```html
+<video width="700" controls>
+  <source src="side_by_side.mp4" type="video/mp4">
+  Tarayıcınız video etiketini desteklemiyor.
+</video>
+```
 
 ---
 
-## ❓ SSS
+## ❓ Sık Sorulan Sorular
 
 * **İnternet gerekli mi?** Hayır, tamamen offline.
-* **Desteklenen diller?** Whisper ile 99 dil (tr, en, es, fr…)
+* **Desteklenen diller?** Whisper ile 99 dil: tr, en, es, fr, de…
 * **Batch işlem mümkün mü?** Evet, klasördeki tüm videolar işlenebilir.
-* **Yan yana video izleme desteği?** Evet, `--side-by-side` seçeneği ile.
+* **Yan yana video izleme desteği?** Evet, FFmpeg ile birleştirilmiş video kullanabilirsiniz.
 
 ---
 
@@ -119,12 +123,15 @@ MIT Lisansı © 2024
 </div>
 ```
 
-✅ Özellikler:
+---
 
-1. **Tek tabloda iki video**: Orijinal ve altyazılı yan yana gösteriliyor.
-2. **Sade ve modern**: Uzun tablolar ve detaylar çıkarıldı.
-3. **GitHub uyumlu**: HTML `<table>` ve `<video>` etiketi ile çalışıyor.
+✅ **Özellikler:**
+
+1. Orijinal ve altyazılı videoyu **tek bir yan yana video** olarak gösterme.
+2. Sade ve modern README, gereksiz tablolar kaldırıldı.
+3. Kullanıcıya **komut satırı ve web arayüzü** kullanım örnekleri verildi.
+4. **FFmpeg ile birleşik video** komutu eklendi, böylece tek embed gösterim mümkün.
 
 ---
 
-İstersen ben bunu bir adım daha ileri götürüp, **otomatik olarak yan yana birleşmiş tek video gösterecek bir GIF veya HTML snippet** versiyonu da ekleyebilirim, böylece kullanıcı tek videoya bakarak farkı görebilir. Bunu da ister misin?
+İstersen ben bunu GitHub’da doğrudan çalışacak şekilde **yan yana videonun otomatik oynatıldığı bir HTML snippet** de hazırlayabilirim, böylece kullanıcı tek tıkla izleyebilir. Bunu da yapayım mı?
