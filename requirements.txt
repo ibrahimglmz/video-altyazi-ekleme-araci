@@ -1,0 +1,28 @@
+# Core AI/ML Dependencies
+openai-whisper>=20230314
+faster-whisper>=0.8.0
+torch>=1.13.0
+torchaudio>=0.13.0
+
+# Audio/Video Processing
+pydub>=0.25.1
+ffmpeg-python>=0.2.0
+
+# Web Framework (for server.py)
+Flask>=2.3.0
+Werkzeug>=2.3.0
+
+# Utility Libraries
+tqdm>=4.65.0
+numpy>=1.21.0
+pathlib2>=2.3.7; python_version<"3.6"
+
+# Optional: GPU acceleration (CUDA)
+# torch-audio-cuda>=0.13.0  # Uncomment if you have CUDA GPU
+# nvidia-ml-py3>=7.352.0    # For GPU monitoring
+
+# Development Dependencies (optional)
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
+# pre-commit>=2.20.0

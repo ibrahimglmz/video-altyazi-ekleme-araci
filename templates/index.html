@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Offline Altyazı Aracı — Arayüz</title>
+  <!-- Tamamen offline çalışsın diye CDN kullanmıyoruz -->
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#334155;--text:#e5e7eb;--acc:#22c55e;--acc2:#a78bfa;--danger:#ef4444}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(120deg,#0b1022,#111827 60%,#0b1022);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Ubuntu,"Helvetica Neue",Arial}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
+    .card{background:rgba(255,255,255,.04);backdrop-filter:saturate(140%) blur(6px);border:1px solid rgba(148,163,184,.15);border-radius:16px;padding:18px}
+    h1{font-size:26px;margin:0 0 12px}
+    h2{font-size:18px;margin:0 0 10px}
+    label{display:block;font-size:13px;color:#cbd5e1;margin:12px 0 6px}
+    input[type=text],select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(148,163,184,.25);background:#0b1220;color:var(--text)}
+    input[type=checkbox]{transform:scale(1.1)}
+    .row{display:flex;gap:10px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:12px;padding:10px 14px;color:#0b1220;background:var(--acc);font-weight:600;cursor:pointer}
+    .btn.secondary{background:#1f2937;color:#e5e7eb;border:1px solid rgba(148,163,184,.25)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .muted{color:#94a3b8}
+    .preview{border-radius:14px;border:1px dashed rgba(148,163,184,.35);padding:14px;background:#0b1220;position:relative;min-height:140px;display:flex;align-items:end;justify-content:center}
+    .subbox{max-width:90%;margin:0 auto 10px;padding:8px 12px;border-radius:10px}
+    .code{background:#0b1220;border:1px solid rgba(148,163,184,.25);border-radius:12px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;white-space:pre-wrap}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#86efac;font-size:12px}
+    .drop{border:1px dashed rgba(148,163,184,.35);border-radius:12px;padding:14px;text-align:center;background:#0b1220}
+    .drop.drag{background:#0f1a33}
+    .list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .tag{padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.25);background:#0b1220;font-size:12px}
+    .hr{height:1px;background:rgba(148,163,184,.15);margin:14px 0}
+    .danger{color:#fecaca}
+    .footer{opacity:.7;font-size:12px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Offline Advanced Video Subtitle Tool <span class="pill">Internet yok / API yok</span></h1>
+    <div class="grid">
+      <!-- Sol Panel -->
+      <section class="card">
+        <h2>1) Giriş Dosyası / Klasör</h2>
+        <label>Dosya veya klasör yolu</label>
+        <input id="inpPath" type="text" placeholder="örn: C:\\videolar\\ders1.mp4 veya ./medya" />
+
+        <div class="row" style="margin-top:12px">
+          <label class="row" style="gap:8px"><input id="batch" type="checkbox"/> Klasördeki tüm medya dosyalarını işle (batch)</label>
+        </div>
+
+        <div class="hr"></div>
+        <h2>2) Çıktı ve Ayarlar</h2>
+        <label>Çıktı klasörü</label>
+        <input id="outDir" type="text" value="outputs" />
+
+        <label>Formatlar (virgülle):</label>
+        <input id="formats" type="text" value="video,srt" />
+
+        <label>Stil</label>
+        <select id="style">
+          <option value="default">Default</option>
+          <option value="bold">Bold</option>
+          <option value="elegant">Elegant</option>
+          <option value="cinema">Cinema</option>
+          <option value="modern">Modern</option>
+        </select>
+
+        <label>Dil (ISO kod ya da auto)</label>
+        <input id="language" type="text" value="auto" />
+
+        <div class="row" style="margin-top:8px">
+          <label class="row" style="gap:8px"><input id="tsInTxt" type="checkbox"/> TXT çıktısında zaman damgası olsun</label>
+        </div>
+
+        <label>Whisper modeli</label>
+        <input id="model" type="text" value="base" />
+
+        <div class="row" style="margin-top:12px">
+          <label class="row" style="gap:8px"><input id="enhance" type="checkbox" checked/> Ses iyileştirme filtreleri (highpass/lowpass/normalize)</label>
+        </div>
+
+        <div class="row" style="margin-top:16px;gap:12px">
+          <button id="btnCmd" class="btn">Komutu Oluştur</button>
+          <button id="btnCopy" class="btn secondary">Kopyala</button>
+        </div>
+
+        <p class="muted" style="margin-top:8px">Aşağıdaki komutu terminalde çalıştırın. <b>Python</b>, <b>ffmpeg</b> ve <b>offline_subtitle_tool.py</b> aynı makinede olmalıdır.</p>
+        <pre id="cmd" class="code"># henüz oluşturulmadı</pre>
+      </section>
+
+      <!-- Sağ Panel -->
+      <section class="card">
+        <h2>Önizleme ve Yardımcı Araçlar</h2>
+        <div class="preview" id="prev">
+          <div class="subbox" id="subBox">Örnek altyazı metni — 2 satırda nasıl görüneceğini önizleyin.</div>
+        </div>
+        <div class="list" id="styleMeta"></div>
+
+        <div class="hr"></div>
+        <h2>İsteğe Bağlı: SRT ⇄ VTT ⇢ TXT Dönüştürücü (Tarayıcı içi, offline)</h2>
+        <div class="drop" id="drop">
+          <b>Bir .srt dosyasını buraya bırakın</b><br/>
+          veya <input type="file" id="filePick" accept=".srt" />
+        </div>
+        <div id="outLinks" class="list"></div>
+        <p class="footer">Not: Tarayıcı içindeki bu dönüştürme yalnızca biçim değiştirir; asıl konuşma-tanıma işlemini CLI aracı yapar.</p>
+
+        <div class="hr"></div>
+        <h2>Sık Kullanılanlar</h2>
+        <div class="list">
+          <span class="tag">video,srt</span>
+          <span class="tag">srt,vtt,txt</span>
+          <span class="tag">model: small</span>
+          <span class="tag">dil: tr</span>
+          <span class="tag">stil: cinema</span>
+        </div>
+        <p class="footer">Hata alırsanız: ffmpeg/ffprobe kurulu mu, Python ortamı doğru mu, dosya yolu erişilebilir mi kontrol edin.</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Stil önizleme ve meta
+    const styleSel = document.getElementById('style');
+    const subBox = document.getElementById('subBox');
+    const styleMeta = document.getElementById('styleMeta');
+
+    function applyStyle(style){
+      const presets = {
+        default: {font:"Arial", size:24, color:'#FFFFFF', bg:'#000000', bgOpacity:0.7, outline:2, shadow:1},
+        bold:    {font:"Arial", size:28, color:'#FFFFFF', bg:'#000000', bgOpacity:0.8, outline:3, shadow:1},
+        elegant: {font:"Times New Roman", size:26, color:'#F5F5DC', bg:'#2F2F2F', bgOpacity:0.6, outline:1, shadow:1},
+        cinema:  {font:"Arial", size:32, color:'#FFD700', bg:'#000000', bgOpacity:0.9, outline:2, shadow:3},
+        modern:  {font:"Roboto", size:24, color:'#00FF41', bg:'#1A1A1A', bgOpacity:0.7, outline:1, shadow:1}
+      };
+      const p = presets[style] || presets.default;
+      subBox.style.fontFamily = p.font;
+      subBox.style.fontSize = p.size + 'px';
+      subBox.style.color = p.color;
+      subBox.style.background = p.bg + Math.round(p.bgOpacity*255).toString(16).padStart(2,'0');
+      subBox.style.background = p.bg + 'CC'; // görsel amaçlı sabit opaklık
+      subBox.style.boxShadow = `0 ${p.shadow}px 0 rgba(0,0,0,.8), 0 0 0 ${p.outline}px rgba(0,0,0,.9)`;
+
+      styleMeta.innerHTML = '';
+      const meta = [
+        ['Font', p.font],
+        ['Boyut', p.size],
+        ['Renk', p.color],
+        ['Arka Plan', p.bg],
+        ['Outline', p.outline],
+        ['Gölge', p.shadow]
+      ];
+      meta.forEach(([k,v])=>{
+        const span = document.createElement('span');
+        span.className='tag';
+        span.textContent = `${k}: ${v}`;
+        styleMeta.appendChild(span);
+      });
+    }
+    applyStyle(styleSel.value);
+    styleSel.addEventListener('change', e=>applyStyle(e.target.value));
+
+    // Komut oluşturma
+    const g = id=>document.getElementById(id);
+    const cmdEl = g('cmd');
+    g('btnCmd').onclick = ()=>{
+      const input = g('inpPath').value.trim();
+      const out = g('outDir').value.trim() || 'outputs';
+      const formats = g('formats').value.trim() || 'video';
+      const style = g('style').value;
+      const lang = g('language').value.trim() || 'auto';
+      const tsTxt = g('tsInTxt').checked ? ' --include-timestamps' : '';
+      const model = g('model').value.trim() || 'base';
+      const enhance = g('enhance').checked ? '' : ' --no-enhance-audio';
+      const batch = g('batch').checked ? ' --batch' : '';
+
+      if(!input){ cmdEl.textContent = '# Lütfen giriş yolu girin'; return; }
+      const cmd = `python offline_subtitle_tool.py -i "${input}" -o "${out}" --formats ${formats} --style ${style} --language ${lang}${tsTxt} --whisper-model ${model}${enhance}${batch}`;
+      cmdEl.textContent = cmd;
+    };
+
+    g('btnCopy').onclick = async ()=>{
+      try { await navigator.clipboard.writeText(cmdEl.textContent); g('btnCopy').textContent='Kopyalandı'; setTimeout(()=>g('btnCopy').textContent='Kopyala',1200);} catch(e){}
+    };
+
+    // SRT -> VTT/TXT dönüştürücü
+    const drop = g('drop');
+    const pick = g('filePick');
+    const links = g('outLinks');
+
+    ;['dragenter','dragover'].forEach(ev=> drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.add('drag');}));
+    ;['dragleave','drop'].forEach(ev=> drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove('drag');}));
+    drop.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if(f) handleFile(f); });
+    pick.addEventListener('change', e=>{ const f = e.target.files[0]; if(f) handleFile(f); });
+
+    function handleFile(file){
+      if(!file.name.toLowerCase().endsWith('.srt')){ alert('Lütfen .srt dosyası verin'); return; }
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const srt = reader.result;
+        const vtt = 'WEBVTT\n\n' + srt.replace(/,/g,'.');
+        const txt = srt.replace(/\r?\n/g,'\n').replace(/\d+\n\d{2}:\d{2}:\d{2},\d{3}\s-->\s\d{2}:\d{2}:\d{2},\d{3}\n/g,'').replace(/\n\n/g,'\n').trim();
+        links.innerHTML = '';
+        links.appendChild(makeLink(vtt, file.name.replace(/\.srt$/i,'.vtt'), 'VTT indir'));
+        links.appendChild(makeLink(txt, file.name.replace(/\.srt$/i,'.txt'), 'TXT indir'));
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function makeLink(text, filename, label){
+      const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.textContent = label; a.className='btn secondary';
+      const wrap = document.createElement('div'); wrap.appendChild(a); return wrap;
+    }
+  </script>
+</body>
+</html>
