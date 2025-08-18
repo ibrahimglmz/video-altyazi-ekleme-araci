@@ -75,3 +75,4 @@ Pipfile.lock
 uploads/
 outputs/
 app.log
+.env
