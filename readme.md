@@ -511,7 +511,7 @@ A: Teorik limit yok, ancak RAM'inize bağlı. 8GB RAM ile ~2 saatlik video işle
 A: `--model large` kullanın, ses iyileştirmeyi açık tutun, yüksek kaliteli ses dosyası kullanın.
 
 ### **Q: Çoklu hoparlör desteği var mı?**
-A: Evet, Whisper konuşmacıları otomatik tanır, ancak isim etiketlemez.
+A: Evet, Whisper konuşmacıları otomatik tanir, ancak isim etiketlemez.
 
 ### **Q: Batch işlem sırasında hata olursa?**
 A: Diğer dosyalar işlenmeye devam eder. Hatalı dosyalar logda gösterilir.
