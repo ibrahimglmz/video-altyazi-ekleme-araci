@@ -1,5 +1,7 @@
 import os
 import subprocess
+import time
+import json
 from pathlib import Path
 from flask import Flask, request, send_from_directory, render_template_string, redirect, url_for, flash
 from werkzeug.utils import secure_filename
@@ -12,179 +14,18 @@ from werkzeug.utils import secure_filename
 APP_DIR = Path.cwd()
 UPLOAD_DIR = APP_DIR / "uploads"
 OUTPUT_DIR = APP_DIR / "outputs"
+STATIC_DIR = APP_DIR / "static"
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
+STATIC_DIR.mkdir(exist_ok=True)
+(STATIC_DIR / "css").mkdir(exist_ok=True)
+(STATIC_DIR / "js").mkdir(exist_ok=True)
 
 ALLOWED_EXT = {'.mp4', '.mov', '.mkv', '.avi', '.webm', '.flv', '.m4v',
                '.mp3', '.wav', '.m4a', '.flac', '.aac', '.ogg'}
 
 app = Flask(__name__)
 app.secret_key = "offline-subtitle-secret"  # flash mesajları için
-
-# ------------------- HTML Şablon -------------------
-INDEX_HTML = """
-<!doctype html>
-<html lang="tr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Offline Subtitle Tool</title>
-  <style>
-    body{font:16px/1.4 system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b1220;color:#e5e7eb;margin:0}
-    .wrap{max-width:900px;margin:40px auto;padding:0 16px}
-    .card{background:#0f172a;border:1px solid #334155;border-radius:14px;padding:18px}
-    h1{margin:0 0 10px;font-size:24px}
-    label{display:block;margin:10px 0 6px;color:#cbd5e1}
-    input[type=file],input[type=text],select{width:100%;padding:10px;border-radius:10px;border:1px solid #475569;background:#0b1220;color:#e5e7eb;box-sizing:border-box}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{appearance:none;border:none;background:#22c55e;color:#0b1220;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;transition:background 0.2s}
-    .btn:hover{background:#16a34a}
-    .btn:disabled{background:#374151;cursor:not-allowed}
-    .btn.alt{background:#1f2937;color:#e5e7eb;border:1px solid #475569}
-    .btn.alt:hover{background:#374151}
-    .muted{color:#94a3b8}
-    .hr{height:1px;background:#334155;margin:14px 0}
-    ul{padding-left:18px}
-    .err{background:#7f1d1d;color:#fecaca;border:1px solid #ef4444;padding:8px 10px;border-radius:10px;margin-bottom:10px}
-    .ok{background:#052e21;color:#a7f3d0;border:1px solid #10b981;padding:8px 10px;border-radius:10px;margin-bottom:10px}
-    a.dl{display:inline-block;margin:6px 6px 0 0;padding:8px 12px;border:1px solid #475569;border-radius:10px;color:#e5e7eb;text-decoration:none;transition:all 0.2s}
-    a.dl:hover{background:#374151;border-color:#64748b}
-    .checkbox-row{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:8px}
-    .checkbox-item{display:flex;gap:8px;align-items:center;margin:0}
-    .checkbox-item input[type=checkbox]{width:auto}
-    .processing{display:none;background:#1e40af;color:#dbeafe;border:1px solid #3b82f6;padding:8px 10px;border-radius:10px;margin-bottom:10px}
-    .file-info{background:#1e293b;border:1px solid #475569;border-radius:8px;padding:10px;margin:10px 0;font-size:14px}
-  </style>
-  <script>
-    function showProcessing() {
-      const form = document.querySelector('form');
-      const btn = document.querySelector('button[type=submit]');
-      const processing = document.querySelector('.processing');
-
-      if (form && btn && processing) {
-        btn.disabled = true;
-        btn.textContent = 'İşleniyor...';
-        processing.style.display = 'block';
-      }
-    }
-  </script>
-</head>
-<body>
-  <div class="wrap">
-    <h1>Offline Subtitle Tool <span class="muted">(Tarayıcıdan kullanım)</span></h1>
-    <div class="card">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for cat, msg in messages %}
-          <div class="{{ 'ok' if cat=='success' else 'err' }}">{{ msg }}</div>
-        {% endfor %}
-      {% endif %}
-      {% endwith %}
-
-      <div class="processing">
-        ⏳ Dosya işleniyor... Bu işlem birkaç dakika sürebilir.
-      </div>
-
-      <form method="post" action="{{ url_for('generate_subtitles') }}" enctype="multipart/form-data" onsubmit="showProcessing()">
-        <label>Video/Audio dosyası</label>
-        <input type="file" name="file" accept="video/*,audio/*" required />
-
-        <div class="row">
-          <div style="flex:1;min-width:220px">
-            <label>Çıktı formatları (virgülle ayrılmış)</label>
-            <input type="text" name="formats" value="video,srt" placeholder="video,srt,vtt,ass,txt" />
-            <div class="muted" style="font-size:12px;margin-top:4px">
-              Örnek: srt,vtt,video veya sadece srt
-            </div>
-          </div>
-          <div style="flex:1;min-width:220px">
-            <label>Dil (ISO kodu veya auto)</label>
-            <input type="text" name="language" value="auto" placeholder="auto, tr, en, es..." />
-            <div class="muted" style="font-size:12px;margin-top:4px">
-              auto: otomatik tespit
-            </div>
-          </div>
-        </div>
-
-        <div class="row">
-          <div style="flex:1;min-width:220px">
-            <label>Altyazı stili</label>
-            <select name="style">
-              <option value="default">Default</option>
-              <option value="bold">Bold</option>
-              <option value="elegant">Elegant</option>
-              <option value="cinema">Cinema</option>
-              <option value="modern">Modern</option>
-              <option value="minimal">Minimal</option>
-              <option value="terminal">Terminal</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:220px">
-            <label>Whisper modeli</label>
-            <select name="model">
-              <option value="tiny">Tiny (hızlı, düşük kalite)</option>
-              <option value="base" selected>Base (dengeli)</option>
-              <option value="small">Small (iyi kalite)</option>
-              <option value="medium">Medium (yüksek kalite)</option>
-              <option value="large">Large (en iyi kalite, yavaş)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="checkbox-row">
-          <label class="checkbox-item">
-            <input type="checkbox" name="include_timestamps" />
-            TXT çıktısında zaman damgası
-          </label>
-          <label class="checkbox-item">
-            <input type="checkbox" name="no_enhance_audio" />
-            Ses iyileştirmesini kapat
-          </label>
-          <label class="checkbox-item">
-            <input type="checkbox" name="gpu" />
-            GPU hızlandırma (varsa)
-          </label>
-        </div>
-
-        <div class="hr"></div>
-        <div class="row">
-          <button class="btn" type="submit">🎬 Altyazı Oluştur</button>
-          <a class="btn alt" href="{{ url_for('list_outputs') }}">📁 Tüm Çıktılar</a>
-          <a class="btn alt" href="{{ url_for('clear_files') }}">🗑️ Temizle</a>
-        </div>
-        <div class="file-info">
-          <strong>Desteklenen formatlar:</strong> MP4, AVI, MOV, MKV, WebM, MP3, WAV, M4A, FLAC vb.<br>
-          <strong>Gereksinimler:</strong> Python, ffmpeg/ffprobe kurulu olmalı
-        </div>
-      </form>
-    </div>
-
-    {% if files %}
-      <div class="card" style="margin-top:16px">
-        <h2>📥 İndirilebilir Çıktılar ({{ files|length }} dosya)</h2>
-        {% if files|length > 10 %}
-          <div class="muted">Son işlem sonuçları:</div>
-        {% endif %}
-        <ul>
-          {% for f in files[:20] %}
-            <li>
-              <a class="dl" href="{{ url_for('download_output', filename=f) }}">
-                📄 {{ f }}
-              </a>
-              <span class="muted">({{ f.split('.')[-1].upper() }})</span>
-            </li>
-          {% endfor %}
-          {% if files|length > 20 %}
-            <li class="muted">... ve {{ files|length - 20 }} dosya daha</li>
-          {% endif %}
-        </ul>
-      </div>
-    {% endif %}
-  </div>
-</body>
-</html>
-"""
-
 
 # ------------------- Yardımcı Fonksiyonlar -------------------
 def _is_allowed(filename: str) -> bool:
@@ -259,7 +100,7 @@ def index():
             if f.is_file():
                 files.append(str(f.relative_to(OUTPUT_DIR)))
 
-    return render_template_string(INDEX_HTML, files=files)
+    return render_template('index.html', files=files)
 
 
 @app.route("/generate_subtitles", methods=["POST"])
@@ -342,8 +183,17 @@ def generate_subtitles():
             use_gpu=use_gpu
         )
 
+        # İşlem başlangıç zamanını kaydet
+        start_time = time.time()
+        print(f"[INFO] Starting processing at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"[INFO] Command: {' '.join(cmd)}")
+
         # İşlemi çalıştır
         result, error = _safe_run_subprocess(cmd)
+
+        # İşlem süresini hesapla
+        processing_time = time.time() - start_time
+        print(f"[INFO] Processing completed in {processing_time:.2f} seconds")
 
         if error:
             flash(error, "error")
@@ -369,10 +219,10 @@ def generate_subtitles():
             return redirect(url_for('index'))
 
         # Başarı mesajı
-        flash(f"✅ Başarıyla tamamlandı! {len(produced_files)} dosya oluşturuldu.", "success")
+        flash(f"✅ Başarıyla tamamlandı! {len(produced_files)} dosya oluşturuldu. İşlem süresi: {processing_time:.1f} saniye", "success")
 
-        # Sonuçları göster
-        return render_template_string(INDEX_HTML, files=produced_files)
+        # Ana sayfaya yönlendir
+        return redirect(url_for('index'))
 
     except Exception as e:
         print(f"[ERROR] Sistem hatası: {str(e)}")
@@ -389,17 +239,7 @@ def list_outputs():
             if f.is_file():
                 files.append(f.relative_to(OUTPUT_DIR))
 
-    html = f"""
-    <h1>📁 Tüm Çıktılar ({len(files)} dosya)</h1>
-    <p><a href="{url_for('index')}">← Ana sayfaya dön</a></p>
-    <ul>
-    """
-    for f in files:
-        file_size = (OUTPUT_DIR / f).stat().st_size
-        size_str = f"{file_size / 1024 / 1024:.1f}MB" if file_size > 1024 * 1024 else f"{file_size / 1024:.1f}KB"
-        html += f'<li><a href="{url_for("download_output", filename=f)}">{f}</a> <em>({size_str})</em></li>'
-    html += "</ul>"
-    return render_template_string(html)
+    return render_template('index.html', files=files, show_all=True)
 
 
 @app.route('/download/<path:filename>')
@@ -462,6 +302,14 @@ def clear_files():
     return redirect(url_for('index'))
 
 
+# API endpoint for progress tracking (future enhancement)
+@app.route('/api/status/<task_id>')
+def get_status(task_id):
+    """Get processing status for a task"""
+    # This could be enhanced with Redis or database for real progress tracking
+    return {"status": "processing", "progress": 50}
+
+
 @app.errorhandler(404)
 def not_found(e):
     return redirect(url_for('index'))
@@ -478,6 +326,7 @@ if __name__ == "__main__":
     print(f"🚀 Offline Subtitle Tool Web Interface")
     print(f"📁 Upload Directory: {UPLOAD_DIR}")
     print(f"📁 Output Directory: {OUTPUT_DIR}")
+    print(f"📁 Static Directory: {STATIC_DIR}")
     print(f"🌐 Server: http://127.0.0.1:5000")
     print(f"⚠️  app.py dosyasının aynı klasörde olduğundan emin olun!")
 

@@ -28,6 +28,8 @@ import json
 import shutil
 import subprocess
 import warnings
+import signal
+import threading
 from pathlib import Path
 from dataclasses import dataclass
 from enum import Enum
@@ -38,12 +40,35 @@ import platform
 # Suppress unnecessary warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+# Global progress tracking
+PROGRESS_CALLBACK = None
+CURRENT_TASK = None
+
 # -----------------------------
 # Configuration
 # -----------------------------
 VIDEO_EXTS = {'.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv', '.m4v', '.mpg', '.mpeg'}
 AUDIO_EXTS = {'.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a', '.opus'}
 ALLOWED_EXTS = VIDEO_EXTS | AUDIO_EXTS
+
+# Progress tracking class
+class ProgressTracker:
+    def __init__(self, callback=None):
+        self.callback = callback
+        self.current_step = 0
+        self.total_steps = 5
+        self.current_message = "Initializing..."
+        
+    def update(self, step: int, message: str):
+        self.current_step = step
+        self.current_message = message
+        progress = int((step / self.total_steps) * 100)
+        
+        print(f"[PROGRESS] {progress}% - {message}")
+        
+        if self.callback:
+            self.callback(progress, message)
+
 
 # Hardware acceleration settings
 USE_GPU = False
@@ -415,6 +440,7 @@ class OfflineSubtitleGenerator:
         self.use_gpu = use_gpu
         self._model = None
         self._processor = None
+        self.progress_tracker = ProgressTracker()
 
         if not shutil.which("ffmpeg"):
             raise RuntimeError("ffmpeg not found in PATH. Please install ffmpeg.")
@@ -425,10 +451,16 @@ class OfflineSubtitleGenerator:
         except ImportError:
             raise ImportError("Whisper not installed. Run: pip install openai-whisper")
 
+    def set_progress_callback(self, callback):
+        """Set progress callback function"""
+        self.progress_tracker.callback = callback
+
     def load_model(self):
         """Lazy load the Whisper model with error handling"""
         if self._model is not None:
             return self._model
+
+        self.progress_tracker.update(1, f"Loading Whisper model: {self.model_name}")
 
         try:
             import whisper
@@ -448,6 +480,7 @@ class OfflineSubtitleGenerator:
                     )
                     self._processor = "faster"
                     print("[+] Using faster-whisper with GPU acceleration")
+                    self.progress_tracker.update(2, "Model loaded with GPU acceleration")
                     return self._model
                 except ImportError:
                     print("[!] faster-whisper not available, falling back to standard whisper")
@@ -459,6 +492,7 @@ class OfflineSubtitleGenerator:
                 device="cuda" if self.use_gpu else "cpu"
             )
             self._processor = "standard"
+            self.progress_tracker.update(2, "Model loaded successfully")
             return self._model
 
         except Exception as e:
@@ -466,6 +500,8 @@ class OfflineSubtitleGenerator:
 
     def extract_audio(self, src: Path, dst_wav: Path) -> Tuple[float, int]:
         """Extract and enhance audio, returning duration and sample rate"""
+        self.progress_tracker.update(2, "Extracting and processing audio...")
+        
         # Validate input file
         if not src.exists():
             raise FileNotFoundError(f"Source file not found: {src}")
@@ -531,6 +567,7 @@ class OfflineSubtitleGenerator:
             if sample_rate not in {8000, 16000, 44100, 48000}:
                 sample_rate = 16000  # Fallback to standard Whisper sample rate
 
+            self.progress_tracker.update(3, f"Audio extracted: {duration:.1f}s")
             return duration, sample_rate
 
         except subprocess.TimeoutExpired:
@@ -546,6 +583,8 @@ class OfflineSubtitleGenerator:
 
     def transcribe(self, audio_path: Path, language: Optional[str]) -> Dict[str, Any]:
         """Transcribe audio with Whisper, handling both standard and faster-whisper"""
+        self.progress_tracker.update(3, "Starting transcription...")
+        
         model = self.load_model()
         lang = None if (language in (None, "", LanguageCode.AUTO.value)) else language
 
@@ -553,6 +592,7 @@ class OfflineSubtitleGenerator:
         duration = float(ffprobe_info(audio_path).get('format', {}).get('duration', 0))
         estimated_time = estimate_transcription_time(duration, self.model_name)
         print(f"[+] Transcribing ({estimated_time:.1f}s estimated)...")
+        self.progress_tracker.update(3, f"Transcribing audio ({estimated_time:.1f}s estimated)...")
 
         if self._processor == "faster":
             # faster-whisper API
@@ -593,15 +633,18 @@ class OfflineSubtitleGenerator:
                 result["segments"].append(seg_dict)
                 result["text"] += segment.text
 
+            self.progress_tracker.update(4, f"Transcription complete: {len(result['segments'])} segments")
             return result
         else:
             # Standard whisper API
-            return model.transcribe(
+            result = model.transcribe(
                 str(audio_path),
                 language=lang,
                 word_timestamps=True,
                 verbose=False
             )
+            self.progress_tracker.update(4, f"Transcription complete: {len(result.get('segments', []))} segments")
+            return result
 
     def write_srt(self, segments: List[Dict[str, Any]], cfg: SubtitleConfig, out_path: Path):
         """Write subtitles in SRT format with proper line breaks"""
@@ -690,6 +733,8 @@ class OfflineSubtitleGenerator:
 
     def embed_subs(self, video: Path, subtitle_path: Path, out_video: Path, cfg: SubtitleConfig):
         """Embed subtitles into video using advanced ffmpeg filters"""
+        self.progress_tracker.update(4, "Embedding subtitles into video...")
+        
         # Determine subtitle format
         sub_ext = subtitle_path.suffix.lower()
 
@@ -731,6 +776,8 @@ class OfflineSubtitleGenerator:
     def process_one(self, src: Path, out_dir: Path, formats: List[str], style: SubtitleStyle,
                     language: str, include_ts: bool) -> Dict[str, str]:
         """Process a single media file"""
+        self.progress_tracker.update(1, f"Starting processing: {src.name}")
+        
         out_dir.mkdir(parents=True, exist_ok=True)
         cfg = style_preset(style)
 
@@ -782,6 +829,8 @@ class OfflineSubtitleGenerator:
                 except:
                     pass
 
+        self.progress_tracker.update(4, "Generating subtitle files...")
+
         # Generate requested output formats
         written = {}
 
@@ -822,6 +871,7 @@ class OfflineSubtitleGenerator:
             except Exception as e:
                 raise RuntimeError(f"Failed to embed subtitles: {str(e)}")
 
+        self.progress_tracker.update(5, "Processing complete!")
         return written
 
 
@@ -867,6 +917,8 @@ Features:
                    help='Enable GPU acceleration if available')
     p.add_argument('--overwrite', action='store_true',
                    help='Overwrite existing output files')
+    p.add_argument('--verbose', action='store_true',
+                   help='Enable verbose output')
 
     return p.parse_args()
 
@@ -901,7 +953,17 @@ def collect_inputs(inp: Path, batch: bool) -> List[Path]:
         return [inp]
 
 
+def signal_handler(signum, frame):
+    """Handle interrupt signals gracefully"""
+    print("\n[!] Processing interrupted by user")
+    sys.exit(1)
+
+
 def main():
+    # Set up signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
     args = parse_args()
 
     # Validate formats
@@ -929,12 +991,16 @@ def main():
     print(f"[i] Output formats: {', '.join(formats)}")
     print(f"[i] Style: {args.style}")
     print(f"[i] Language: {args.language}\n")
+    print(f"[i] GPU acceleration: {'enabled' if args.gpu else 'disabled'}")
+    print(f"[i] Audio enhancement: {'enabled' if not args.no_audio_enhance else 'disabled'}")
 
     success_count = 0
+    start_time = datetime.now()
 
     for idx, src in enumerate(input_files, 1):
         try:
             print(f"\n=== Processing {idx}/{len(input_files)}: {src.name} ===")
+            file_start_time = datetime.now()
 
             outputs = gen.process_one(
                 src=src,
@@ -945,6 +1011,9 @@ def main():
                 include_ts=args.include_timestamps
             )
 
+            file_duration = datetime.now() - file_start_time
+            print(f"[+] File processed in {file_duration.total_seconds():.1f} seconds")
+
             for fmt, path in outputs.items():
                 print(f"  → {fmt.upper()}: {Path(path).name}")
 
@@ -954,7 +1023,9 @@ def main():
             print(f"\n[!] Failed to process {src.name}: {str(e)}", file=sys.stderr)
             continue
 
+    total_duration = datetime.now() - start_time
     print(f"\nCompleted: {success_count} of {len(input_files)} files processed successfully")
+    print(f"Total processing time: {total_duration.total_seconds():.1f} seconds")
     print(f"Output directory: {output_dir.absolute()}")
 
 
