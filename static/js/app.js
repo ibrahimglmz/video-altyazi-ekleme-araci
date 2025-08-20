@@ -7,6 +7,11 @@ class SubtitleTool {
         this.progressBar = document.querySelector('.progress-fill');
         this.loadingText = document.querySelector('.loading-text');
         this.loadingSubtext = document.querySelector('.loading-subtext');
+        
+        // Initialize multilingual form
+        this.multilingualForm = document.getElementById('multilingualForm');
+        this.multilingualFileInput = document.getElementById('multilingualFileInput');
+        this.multilingualSubmitBtn = document.getElementById('multilingualSubmitBtn');
     }
 
     init() {
@@ -53,6 +58,25 @@ class SubtitleTool {
         const clearBtn = document.getElementById('clearBtn');
         if (clearBtn) {
             clearBtn.addEventListener('click', (e) => this.handleClearFiles(e));
+        }
+        
+        // Multilingual form submission
+        if (this.multilingualForm) {
+            this.multilingualForm.addEventListener('submit', (e) => this.handleMultilingualSubmit(e));
+        }
+
+        // Multilingual file input change
+        if (this.multilingualFileInput) {
+            this.multilingualFileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        }
+        
+        // Audio mix range slider
+        const audioMixRange = document.getElementById('original_audio_mix');
+        if (audioMixRange) {
+            audioMixRange.addEventListener('input', (e) => {
+                const value = Math.round(e.target.value * 100);
+                document.getElementById('audioMixValue').textContent = `${value}%`;
+            });
         }
     }
 
@@ -292,15 +316,111 @@ class SubtitleTool {
         
         return this.validateFile(file);
     }
+    
+    async handleMultilingualSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.validateMultilingualForm()) {
+            return;
+        }
 
-    showLoading() {
+        this.showLoading('Multilingual TTS Processing');
+        
+        try {
+            const formData = new FormData(this.multilingualForm);
+            
+            // Update progress for multilingual processing
+            this.updateProgress(5, 'Uploading video file...');
+            
+            const response = await fetch('/generate_multilingual_tts', {
+                method: 'POST',
+                body: formData
+            });
+
+            this.updateProgress(20, 'Generating subtitles...');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            this.updateProgress(40, 'Processing TTS for selected languages...');
+            
+            // Handle response
+            const result = await response.text();
+            
+            this.updateProgress(80, 'Combining audio and video...');
+            
+            setTimeout(() => {
+                this.updateProgress(100, 'Complete!');
+                
+                setTimeout(() => {
+                    this.hideLoading();
+                    
+                    // Check if response contains success message
+                    if (result.includes('success') || response.redirected) {
+                        this.showMessage('Multilingual TTS videos generated successfully!', 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        // Parse and display any error messages
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(result, 'text/html');
+                        const errorMsg = doc.querySelector('.message-error');
+                        
+                        if (errorMsg) {
+                            this.showMessage(errorMsg.textContent, 'error');
+                        } else {
+                            this.showMessage('Multilingual processing completed. Check the output files.', 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        }
+                    }
+                }, 1000);
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Error:', error);
+            this.hideLoading();
+            this.showMessage(`Error: ${error.message}`, 'error');
+        }
+    }
+    
+    validateMultilingualForm() {
+        const file = this.multilingualFileInput.files[0];
+        
+        if (!file) {
+            this.showMessage('Please select a video file to process.', 'error');
+            return false;
+        }
+        
+        // Check if at least one language is selected
+        const selectedLanguages = this.multilingualForm.querySelectorAll('input[name="tts_languages"]:checked');
+        if (selectedLanguages.length === 0) {
+            this.showMessage('Please select at least one language for TTS generation.', 'error');
+            return false;
+        }
+        
+        return this.validateFile(file);
+    }
+
+    showLoading(title = 'Processing your file...') {
         if (this.loadingOverlay) {
             this.loadingOverlay.classList.add('active');
             this.updateProgress(0, 'Initializing...');
+            
+            if (this.loadingText) {
+                this.loadingText.textContent = title;
+            }
         }
         
         if (this.submitBtn) {
             this.submitBtn.disabled = true;
+        }
+        
+        if (this.multilingualSubmitBtn) {
+            this.multilingualSubmitBtn.disabled = true;
         }
     }
 
@@ -311,6 +431,10 @@ class SubtitleTool {
         
         if (this.submitBtn) {
             this.submitBtn.disabled = false;
+        }
+        
+        if (this.multilingualSubmitBtn) {
+            this.multilingualSubmitBtn.disabled = false;
         }
     }
 
@@ -415,6 +539,26 @@ class SubtitleTool {
             console.warn('Could not load saved settings:', error);
         }
     }
+}
+
+// Tab switching functionality
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const targetTab = tabName === 'basic' ? 'basicTab' : 'multilingualTab';
+    document.getElementById(targetTab).classList.add('active');
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
 }
 
 // Initialize the application when DOM is loaded

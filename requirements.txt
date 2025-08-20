@@ -7,10 +7,15 @@ torchaudio>=0.13.0
 # Audio/Video Processing
 pydub>=0.25.1
 ffmpeg-python>=0.2.0
+moviepy>=1.0.3
 
 # Web Framework (for server.py)
 Flask>=2.3.0
 Werkzeug>=2.3.0
+
+# TTS Dependencies
+gtts>=2.3.0
+edge-tts>=6.1.0
 
 # Utility Libraries
 tqdm>=4.65.0
