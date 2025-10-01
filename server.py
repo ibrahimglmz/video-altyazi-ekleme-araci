@@ -39,7 +39,9 @@ from datetime import datetime, timedelta
 import platform
 
 # Import TTS processor
-from tts_processor import MultilingualTTSProcessor, TTSEngine, SupportedLanguage
+from tts_processor import MultilingualTTSProcessor, TTSEngine
+# Import SupportedLanguage from multilingual_processor.py
+from multilingual_processor import SupportedLanguage
 
 # Suppress unnecessary warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -1071,21 +1073,7 @@ def main():
         valid_tts_languages = [lang.value for lang in SupportedLanguage]
         for lang in tts_languages:
             if lang not in valid_tts_languages:
-            f"{summary['successful_languages']}/{summary['total_languages']} dil başarılı. "
-            f"İşlem süresi: {processing_time:.1f} saniye"
-        )
-        
-        if summary['errors'] > 0:
-            success_msg += f" ({summary['errors']} hata)"
-        
-        flash(success_msg, "success")
-        return redirect(url_for('index'))
-
-    except Exception as e:
-        print(f"[ERROR] Sistem hatası: {str(e)}")
-        flash(f"Sistem hatası: {str(e)}", "error")
-        return redirect(url_for('index'))
-
+                raise SystemExit(f"Invalid TTS language: {lang}. Choose from: {', '.join(valid_tts_languages)}")
 
     # Initialize generator
     try:

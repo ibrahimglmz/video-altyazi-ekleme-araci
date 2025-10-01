@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oluşturulan Dosyalar</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="header fade-in-up">
+            <h1>Oluşturulan Dosyalar</h1>
+            <p class="subtitle">İşlenmiş tüm çıktı dosyalarınız</p>
+        </header>
+
+        <div class="card fade-in-up output-files">
+            <div class="card-header">
+                <div class="card-icon">📥</div>
+                <h2 class="card-title">Dosyalar ({{ files|length }})</h2>
+            </div>
+            
+            <div class="file-list">
+                {% for file in files %}
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon">
+                            {% set ext = file.split('.')[-1].upper() %}
+                            {{ ext[:3] }}
+                        </div>
+                        <div class="file-details">
+                            <h4>{{ file.split('/')[-1] }}</h4>
+                            <p>{{ ext }} dosyası • İndirmek için tıklayın</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('download_output', filename=file) }}" class="btn btn-secondary">
+                        <span>⬇️</span>
+                        İndir
+                    </a>
+                </div>
+                {% endfor %}
+                
+                {% if not files %}
+                <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Henüz dosya oluşturulmadı.</p>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem; text-align: center;">
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                    <span>🏠</span>
+                    Ana Sayfaya Dön
+                </a>
+            </div>
+        </div>
+
+        <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
+            <p>Profesyonel Altyazı Aracı • OpenAI Whisper ve Gelişmiş TTS tarafından desteklenmektedir • %100 Çevrimdışı İşleme</p>
+            <p style="margin-top: 0.5rem;">Gizliliğiniz korunur - tüm işlemler cihazınızda yerel olarak gerçekleşir</p>
+        </footer>
+    </div>
+</body>
+</html>

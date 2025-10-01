@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Subtitle Tool - AI Powered Offline Subtitle Generator</title>
-    <meta name="description" content="Professional AI-powered subtitle generator that works completely offline. Generate SRT, VTT, ASS subtitles with advanced styling options.">
+    <title>Profesyonel Altyazı Aracı - Yapay Zeka Destekli Çevrimdışı Altyazı Oluşturucu</title>
+    <meta name="description" content="Tamamen çevrimdışı çalışan, yapay zeka destekli profesyonel altyazı oluşturucu. Gelişmiş stil seçenekleriyle SRT, VTT, ASS altyazıları oluşturun.">
     
     <!-- Preload critical resources -->
     <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style">
@@ -21,8 +21,8 @@
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <div class="loading-text">Processing your file...</div>
-            <div class="loading-subtext">This may take a few minutes depending on file size</div>
+            <div class="loading-text">Dosyanız işleniyor...</div>
+            <div class="loading-subtext">Dosya boyutuna bağlı olarak bu birkaç dakika sürebilir</div>
             <div class="progress-bar">
                 <div class="progress-fill"></div>
             </div>
@@ -32,11 +32,11 @@
     <div class="container">
         <!-- Header -->
         <header class="header fade-in-up">
-            <h1>Professional Subtitle Tool</h1>
-            <p class="subtitle">AI-powered subtitle generation that works completely offline</p>
+            <h1>Profesyonel Altyazı Aracı</h1>
+            <p class="subtitle">Yapay zeka destekli, tamamen çevrimdışı altyazı oluşturma</p>
             <div class="badge">
                 <div class="badge-icon">🔒</div>
-                <span>100% Offline • No API Required • Privacy First</span>
+                <span>%100 Çevrimdışı • API Gerektirmez • Önce Gizlilik</span>
             </div>
         </header>
 
@@ -58,56 +58,56 @@
             <div class="card fade-in-up">
                 <div class="card-header">
                     <div class="card-icon">🎬</div>
-                    <h2 class="card-title">Upload & Configure</h2>
+                    <h2 class="card-title">Yükle ve Yapılandır</h2>
                 </div>
 
                 <!-- Tab Navigation -->
                 <div class="tab-navigation" style="margin-bottom: 2rem;">
                     <button class="tab-btn active" onclick="switchTab('basic')">
                         <span>📝</span>
-                        Basic Subtitles
+                        Temel Altyazılar
                     </button>
                     <button class="tab-btn" onclick="switchTab('multilingual')">
                         <span>🌍</span>
-                        Multilingual TTS
+                        Çok Dilli TTS
                     </button>
                 </div>
 
                 <!-- Basic Subtitles Tab -->
                 <div id="basicTab" class="tab-content active">
-                    <form id="subtitleForm" method="post" action="{{ url_for('generate_subtitles') }}" enctype="multipart/form-data">
+                    <form id="subtitleForm" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
                         <!-- File Upload -->
                         <div class="form-group">
-                            <label class="form-label">Select Video or Audio File</label>
+                            <label class="form-label">Video veya Ses Dosyası Seçin</label>
                             <div class="file-upload">
                                 <div class="file-upload-icon">📁</div>
-                                <div class="file-upload-text">Drop your file here or click to browse</div>
-                                <div class="file-upload-hint">Supports MP4, AVI, MOV, MKV, MP3, WAV, M4A and more</div>
+                                <div class="file-upload-text">Dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
+                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, MP3, WAV, M4A ve daha fazlasını destekler</div>
                                 <input type="file" id="fileInput" name="file" class="file-input" accept="video/*,audio/*" required>
                             </div>
                         </div>
 
                         <!-- Output Formats -->
                         <div class="form-group">
-                            <label for="formats" class="form-label">Output Formats</label>
+                            <label for="formats" class="form-label">Çıktı Formatları</label>
                             <input type="text" id="formats" name="formats" class="form-input" value="video,srt" placeholder="video,srt,vtt,ass,txt">
-                            <small class="text-muted">Comma-separated list of desired output formats</small>
+                            <small class="text-muted">İstenen çıktı formatlarının virgülle ayrılmış listesi</small>
                         </div>
 
                         <!-- Language and Style Row -->
                         <div class="form-group">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
-                                    <label for="language" class="form-label">Language</label>
-                                    <input type="text" id="language" name="language" class="form-input" value="auto" placeholder="auto, en, tr, es...">
+                                    <label for="language" class="form-label">Dil</label>
+                                    <input type="text" id="language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr, es...">
                                 </div>
                                 <div>
-                                    <label for="style" class="form-label">Subtitle Style</label>
+                                    <label for="style" class="form-label">Altyazı Stili</label>
                                     <select id="style" name="style" class="form-select">
-                                        <option value="default">Default</option>
-                                        <option value="bold">Bold</option>
-                                        <option value="elegant">Elegant</option>
-                                        <option value="cinema">Cinema</option>
+                                        <option value="default">Varsayılan</option>
+                                        <option value="bold">Kalın</option>
+                                        <option value="elegant">Zarif</option>
+                                        <option value="cinema">Sinema</option>
                                         <option value="modern">Modern</option>
                                         <option value="minimal">Minimal</option>
                                         <option value="terminal">Terminal</option>
@@ -118,31 +118,31 @@
 
                         <!-- Model Selection -->
                         <div class="form-group">
-                            <label for="model" class="form-label">Whisper Model</label>
+                            <label for="model" class="form-label">Whisper Modeli</label>
                             <select id="model" name="model" class="form-select">
-                                <option value="tiny">Tiny (Fast, Lower Quality)</option>
-                                <option value="base" selected>Base (Balanced)</option>
-                                <option value="small">Small (Good Quality)</option>
-                                <option value="medium">Medium (High Quality)</option>
-                                <option value="large">Large (Best Quality, Slow)</option>
+                                <option value="tiny">Tiny (Hızlı, Düşük Kalite)</option>
+                                <option value="base" selected>Base (Dengeli)</option>
+                                <option value="small">Small (İyi Kalite)</option>
+                                <option value="medium">Medium (Yüksek Kalite)</option>
+                                <option value="large">Large (En İyi Kalite, Yavaş)</option>
                             </select>
                         </div>
 
                         <!-- Advanced Options -->
                         <div class="form-group">
-                            <label class="form-label">Advanced Options</label>
+                            <label class="form-label">Gelişmiş Seçenekler</label>
                             <div class="checkbox-group">
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="include_timestamps" name="include_timestamps" class="checkbox">
-                                    <label for="include_timestamps">Include timestamps in TXT output</label>
+                                    <label for="include_timestamps">TXT çıktısına zaman damgalarını dahil et</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="no_enhance_audio" name="no_enhance_audio" class="checkbox">
-                                    <label for="no_enhance_audio">Disable audio enhancement</label>
+                                    <label for="no_enhance_audio">Ses geliştirmeyi devre dışı bırak</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="gpu" name="gpu" class="checkbox">
-                                    <label for="gpu">Enable GPU acceleration</label>
+                                    <label for="gpu">GPU hızlandırmayı etkinleştir</label>
                                 </div>
                             </div>
                         </div>
@@ -151,7 +151,7 @@
                         <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
                             <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 1;">
                                 <span>🚀</span>
-                                Generate Subtitles
+                                Altyazıları Oluştur
                             </button>
                         </div>
                     </form>
@@ -159,21 +159,21 @@
 
                 <!-- Multilingual TTS Tab -->
                 <div id="multilingualTab" class="tab-content">
-                    <form id="multilingualForm" method="post" action="{{ url_for('generate_multilingual_tts') }}" enctype="multipart/form-data">
+                    <form id="multilingualForm" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
                         <!-- File Upload -->
                         <div class="form-group">
-                            <label class="form-label">Select Video File</label>
+                            <label class="form-label">Video Dosyası Seçin</label>
                             <div class="file-upload">
                                 <div class="file-upload-icon">🎬</div>
-                                <div class="file-upload-text">Drop your video file here or click to browse</div>
-                                <div class="file-upload-hint">Supports MP4, AVI, MOV, MKV, WebM and more</div>
+                                <div class="file-upload-text">Video dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
+                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, WebM ve daha fazlasını destekler</div>
                                 <input type="file" id="multilingualFileInput" name="file" class="file-input" accept="video/*" required>
                             </div>
                         </div>
 
                         <!-- Language Selection -->
                         <div class="form-group">
-                            <label class="form-label">Select Target Languages for TTS</label>
+                            <label class="form-label">TTS İçin Hedef Dilleri Seçin</label>
                             <div class="language-grid">
                                 {% for code, name in supported_languages.items() %}
                                 <div class="language-item">
@@ -186,39 +186,39 @@
 
                         <!-- TTS Engine Selection -->
                         <div class="form-group">
-                            <label for="tts_engine" class="form-label">TTS Engine</label>
+                            <label for="tts_engine" class="form-label">TTS Motoru</label>
                             <select id="tts_engine" name="tts_engine" class="form-select">
-                                <option value="edge_tts" selected>Edge TTS (High Quality, Natural Voices)</option>
-                                <option value="gtts">Google TTS (Fast, Good Quality)</option>
+                                <option value="edge_tts" selected>Edge TTS (Yüksek Kalite, Doğal Sesler)</option>
+                                <option value="gtts">Google TTS (Hızlı, İyi Kalite)</option>
                             </select>
                         </div>
 
                         <!-- Audio Mix Settings -->
                         <div class="form-group">
-                            <label for="original_audio_mix" class="form-label">Original Audio Volume</label>
+                            <label for="original_audio_mix" class="form-label">Orijinal Ses Seviyesi</label>
                             <input type="range" id="original_audio_mix" name="original_audio_mix" min="0" max="1" step="0.1" value="0.3" class="form-range">
                             <div class="range-labels">
-                                <span>Mute</span>
-                                <span id="audioMixValue">30%</span>
-                                <span>Full</span>
+                                <span>Sessiz</span>
+                                <span id="audioMixValue">%30</span>
+                                <span>Tam</span>
                             </div>
                         </div>
 
                         <!-- Subtitle Settings -->
                         <div class="form-group">
-                            <label class="form-label">Subtitle Settings</label>
+                            <label class="form-label">Altyazı Ayarları</label>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
-                                    <label for="multilingual_language" class="form-label">Detection Language</label>
-                                    <input type="text" id="multilingual_language" name="language" class="form-input" value="auto" placeholder="auto, en, tr...">
+                                    <label for="multilingual_language" class="form-label">Algılama Dili</label>
+                                    <input type="text" id="multilingual_language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr...">
                                 </div>
                                 <div>
-                                    <label for="multilingual_style" class="form-label">Subtitle Style</label>
+                                    <label for="multilingual_style" class="form-label">Altyazı Stili</label>
                                     <select id="multilingual_style" name="style" class="form-select">
-                                        <option value="cinema" selected>Cinema</option>
-                                        <option value="default">Default</option>
-                                        <option value="bold">Bold</option>
-                                        <option value="elegant">Elegant</option>
+                                        <option value="cinema" selected>Sinema</option>
+                                        <option value="default">Varsayılan</option>
+                                        <option value="bold">Kalın</option>
+                                        <option value="elegant">Zarif</option>
                                         <option value="modern">Modern</option>
                                         <option value="minimal">Minimal</option>
                                         <option value="terminal">Terminal</option>
@@ -231,23 +231,23 @@
                         <div class="form-group">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div>
-                                    <label for="multilingual_model" class="form-label">Whisper Model</label>
+                                    <label for="multilingual_model" class="form-label">Whisper Modeli</label>
                                     <select id="multilingual_model" name="model" class="form-select">
-                                        <option value="tiny">Tiny (Fast)</option>
-                                        <option value="base" selected>Base (Balanced)</option>
-                                        <option value="small">Small (Good Quality)</option>
-                                        <option value="medium">Medium (High Quality)</option>
-                                        <option value="large">Large (Best Quality)</option>
+                                        <option value="tiny">Tiny (Hızlı)</option>
+                                        <option value="base" selected>Base (Dengeli)</option>
+                                        <option value="small">Small (İyi Kalite)</option>
+                                        <option value="medium">Medium (Yüksek Kalite)</option>
+                                        <option value="large">Large (En İyi Kalite)</option>
                                     </select>
                                 </div>
                                 <div style="display: flex; flex-direction: column; justify-content: center;">
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="multilingual_embed_subtitles" name="embed_subtitles" class="checkbox" checked>
-                                        <label for="multilingual_embed_subtitles">Embed subtitles in videos</label>
+                                        <label for="multilingual_embed_subtitles">Altyazıları videoya göm</label>
                                     </div>
                                     <div class="checkbox-item">
                                         <input type="checkbox" id="multilingual_gpu" name="gpu" class="checkbox">
-                                        <label for="multilingual_gpu">Enable GPU acceleration</label>
+                                        <label for="multilingual_gpu">GPU hızlandırmayı etkinleştir</label>
                                     </div>
                                 </div>
                             </div>
@@ -257,7 +257,7 @@
                         <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
                             <button type="submit" id="multilingualSubmitBtn" class="btn btn-primary" style="flex: 1;">
                                 <span>🌍</span>
-                                Generate Multilingual Videos
+                                Çok Dilli Videolar Oluştur
                             </button>
                         </div>
                     </form>
@@ -267,11 +267,11 @@
                 <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
                     <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary">
                         <span>📁</span>
-                        View All Files
+                        Tüm Dosyaları Görüntüle
                     </a>
                     <a href="#" id="clearBtn" class="btn btn-danger">
                         <span>🗑️</span>
-                        Clear Files
+                        Dosyaları Temizle
                     </a>
                 </div>
             </div>
@@ -280,31 +280,32 @@
             <div class="card fade-in-up">
                 <div class="card-header">
                     <div class="card-icon">👁️</div>
-                    <h2 class="card-title">Preview & Information</h2>
+                    <h2 class="card-title">Önizleme ve Bilgi</h2>
                 </div>
 
                 <!-- Feature Comparison -->
                 <div class="form-group">
-                    <label class="form-label">Feature Comparison</label>
+                    <label class="form-label">Özellik Karşılaştırması</label>
                     <div class="feature-comparison">
                         <div class="feature-column">
-                            <h4>📝 Basic Subtitles</h4>
+                            <h4>📝 Temel Altyazılar</h4>
                             <ul>
-                                <li>✅ Generate SRT/VTT/ASS subtitles</li>
-                                <li>✅ Multiple style presets</li>
-                                <li>✅ Embed subtitles in video</li>
-                                <li>✅ Export as text files</li>
-                                <li>⚡ Fast processing</li>
+                                <li>✅ SRT/VTT/ASS altyazıları oluşturun</li>
+                                <li>✅ Birden çok stil önayarı</li>
+                                <li>✅ Altyazıları videoya gömün</li>
+                                <li>✅ Metin dosyaları olarak dışa aktarın</li>
+                                <li>⚡ Hızlı işlem</li>
                             </ul>
                         </div>
                         <div class="feature-column">
-                            <h4>🌍 Multilingual TTS</h4>
+                            <h4>🌍 Çok Dilli TTS</h4>
                             <ul>
-                                <li>✅ All basic subtitle features</li>
-                                <li>🎤 Text-to-Speech in 12 languages</li>
-                                <li>🎬 Video with TTS audio tracks</li>
-                                <li>🔊 Mix with original audio</li>
-                                <li>📦 Batch export for all languages</li>
+                                <li>✅ Tüm temel altyazı özellikleri</li>
+                                <li>🎤 12 dilde Metin-Konuşma</li>
+                                <li>🎬 TTS ses parçaları içeren video</li>
+                                <li>🔊 Orijinal sesle karıştırın</li>
+                                <li>📦 Tüm diller için toplu dışa aktarma</li>
+                                <li>➕ Daha Fazlası!</li>
                             </ul>
                         </div>
                     </div>
@@ -312,17 +313,17 @@
 
                 <!-- Style Preview -->
                 <div class="form-group">
-                    <label class="form-label">Subtitle Style Preview</label>
+                    <label class="form-label">Altyazı Stili Önizlemesi</label>
                     <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 12px; padding: 2rem; text-align: center; position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center;">
                         <div class="style-preview" style="padding: 0.75rem 1.5rem; border-radius: 8px; max-width: 90%;">
-                            This is how your subtitles will appear<br>with the selected style settings
+                            Altyazılarınız seçilen stil ayarlarıyla<br>bu şekilde görünecektir
                         </div>
                     </div>
                 </div>
 
                 <!-- Supported Languages -->
                 <div class="form-group">
-                    <label class="form-label">Supported TTS Languages</label>
+                    <label class="form-label">Desteklenen TTS Dilleri</label>
                     <div class="language-showcase">
                         {% for code, name in supported_languages.items() %}
                         <span class="language-tag">{{ name }}</span>
@@ -332,28 +333,28 @@
 
                 <!-- System Requirements -->
                 <div class="form-group">
-                    <label class="form-label">System Requirements</label>
+                    <label class="form-label">Sistem Gereksinimleri</label>
                     <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem;">
                         <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <li>Python 3.7+ with required packages</li>
-                            <li>FFmpeg/FFprobe installed and in PATH</li>
-                            <li>Minimum 4GB RAM (8GB recommended)</li>
-                            <li>GPU with CUDA support (optional)</li>
-                            <li><strong>For TTS:</strong> Internet connection for voice synthesis</li>
+                            <li>Python 3.7+ gerekli paketlerle birlikte</li>
+                            <li>FFmpeg/FFprobe yüklü ve PATH'te</li>
+                            <li>Minimum 4GB RAM (8GB önerilir)</li>
+                            <li>CUDA destekli GPU (isteğe bağlı)</li>
+                            <li><strong>TTS için:</strong> Ses sentezi için internet bağlantısı</li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Performance Tips -->
                 <div class="form-group">
-                    <label class="form-label">Performance Tips</label>
+                    <label class="form-label">Performans İpuçları</label>
                     <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius); padding: 1rem;">
                         <ul style="margin: 0; padding-left: 1.5rem; color: #c7d2fe; font-size: 0.875rem;">
-                            <li><strong>Basic Mode:</strong> Fast subtitle generation only</li>
-                            <li><strong>TTS Mode:</strong> Longer processing time for voice synthesis</li>
-                            <li><strong>Edge TTS:</strong> Higher quality, requires internet</li>
-                            <li><strong>Google TTS:</strong> Faster, good for testing</li>
-                            <li><strong>GPU:</strong> Significantly faster transcription</li>
+                            <li><strong>Temel Mod:</strong> Yalnızca hızlı altyazı oluşturma</li>
+                            <li><strong>TTS Modu:</strong> Ses sentezi için daha uzun işlem süresi</li>
+                            <li><strong>Edge TTS:</strong> Daha yüksek kalite, internet gerektirir</li>
+                            <li><strong>Google TTS:</strong> Daha hızlı, test için iyi</li>
+                            <li><strong>GPU:</strong> Önemli ölçüde daha hızlı transkripsiyon</li>
                         </ul>
                     </div>
                 </div>
@@ -365,7 +366,7 @@
         <div class="card fade-in-up output-files">
             <div class="card-header">
                 <div class="card-icon">📥</div>
-                <h2 class="card-title">Generated Files ({{ files|length }})</h2>
+                <h2 class="card-title">Oluşturulan Dosyalar ({{ files|length }})</h2>
             </div>
             
             <div class="file-list">
@@ -378,20 +379,20 @@
                         </div>
                         <div class="file-details">
                             <h4>{{ file.split('/')[-1] }}</h4>
-                            <p>{{ ext }} file • Click to download</p>
+                            <p>{{ ext }} dosyası • İndirmek için tıklayın</p>
                         </div>
                     </div>
                     <a href="{{ url_for('download_output', filename=file) }}" class="btn btn-secondary">
                         <span>⬇️</span>
-                        Download
+                        İndir
                     </a>
                 </div>
                 {% endfor %}
                 
                 {% if files|length > 10 %}
                 <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
-                    ... and {{ files|length - 10 }} more files
-                    <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary" style="margin-left: 1rem;">View All</a>
+                    ... ve {{ files|length - 10 }} dosya daha
+                    <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary" style="margin-left: 1rem;">Tümünü Görüntüle</a>
                 </div>
                 {% endif %}
             </div>
@@ -400,218 +401,8 @@
 
         <!-- Footer -->
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
-            <p>Professional Subtitle Tool • Powered by OpenAI Whisper & Advanced TTS • 100% Offline Processing</p>
-            <p style="margin-top: 0.5rem;">Your privacy is protected - all processing happens locally on your machine</p>
-        </footer>
-    </div>
-
-    <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-</body>
-</html>
-                    <!-- File Upload -->
-                    <div class="form-group">
-                        <label class="form-label">Select Video or Audio File</label>
-                        <div class="file-upload">
-                            <div class="file-upload-icon">📁</div>
-                            <div class="file-upload-text">Drop your file here or click to browse</div>
-                            <div class="file-upload-hint">Supports MP4, AVI, MOV, MKV, MP3, WAV, M4A and more</div>
-                            <input type="file" id="fileInput" name="file" class="file-input" accept="video/*,audio/*" required>
-                        </div>
-                    </div>
-
-                    <!-- Output Formats -->
-                    <div class="form-group">
-                        <label for="formats" class="form-label">Output Formats</label>
-                        <input type="text" id="formats" name="formats" class="form-input" value="video,srt" placeholder="video,srt,vtt,ass,txt">
-                        <small class="text-muted">Comma-separated list of desired output formats</small>
-                    </div>
-
-                    <!-- Language and Style Row -->
-                    <div class="form-group">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div>
-                                <label for="language" class="form-label">Language</label>
-                                <input type="text" id="language" name="language" class="form-input" value="auto" placeholder="auto, en, tr, es...">
-                            </div>
-                            <div>
-                                <label for="style" class="form-label">Subtitle Style</label>
-                                <select id="style" name="style" class="form-select">
-                                    <option value="default">Default</option>
-                                    <option value="bold">Bold</option>
-                                    <option value="elegant">Elegant</option>
-                                    <option value="cinema">Cinema</option>
-                                    <option value="modern">Modern</option>
-                                    <option value="minimal">Minimal</option>
-                                    <option value="terminal">Terminal</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Model Selection -->
-                    <div class="form-group">
-                        <label for="model" class="form-label">Whisper Model</label>
-                        <select id="model" name="model" class="form-select">
-                            <option value="tiny">Tiny (Fast, Lower Quality)</option>
-                            <option value="base" selected>Base (Balanced)</option>
-                            <option value="small">Small (Good Quality)</option>
-                            <option value="medium">Medium (High Quality)</option>
-                            <option value="large">Large (Best Quality, Slow)</option>
-                        </select>
-                    </div>
-
-                    <!-- Advanced Options -->
-                    <div class="form-group">
-                        <label class="form-label">Advanced Options</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="include_timestamps" name="include_timestamps" class="checkbox">
-                                <label for="include_timestamps">Include timestamps in TXT output</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="no_enhance_audio" name="no_enhance_audio" class="checkbox">
-                                <label for="no_enhance_audio">Disable audio enhancement</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="gpu" name="gpu" class="checkbox">
-                                <label for="gpu">Enable GPU acceleration</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 1;">
-                            <span>🚀</span>
-                            Generate Subtitles
-                        </button>
-                        <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary">
-                            <span>📁</span>
-                            View All Files
-                        </a>
-                        <a href="#" id="clearBtn" class="btn btn-danger">
-                            <span>🗑️</span>
-                            Clear Files
-                        </a>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Preview and Info Card -->
-            <div class="card fade-in-up">
-                <div class="card-header">
-                    <div class="card-icon">👁️</div>
-                    <h2 class="card-title">Style Preview & Info</h2>
-                </div>
-
-                <!-- Style Preview -->
-                <div class="form-group">
-                    <label class="form-label">Subtitle Style Preview</label>
-                    <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 12px; padding: 2rem; text-align: center; position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center;">
-                        <div class="style-preview" style="padding: 0.75rem 1.5rem; border-radius: 8px; max-width: 90%;">
-                            This is how your subtitles will appear<br>with the selected style settings
-                        </div>
-                    </div>
-                </div>
-
-                <!-- System Requirements -->
-                <div class="form-group">
-                    <label class="form-label">System Requirements</label>
-                    <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem;">
-                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <li>Python 3.7+ with required packages</li>
-                            <li>FFmpeg/FFprobe installed and in PATH</li>
-                            <li>Minimum 4GB RAM (8GB recommended)</li>
-                            <li>GPU with CUDA support (optional)</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Supported Formats -->
-                <div class="form-group">
-                    <label class="form-label">Supported Formats</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div>
-                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.875rem;">Video</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                                <span class="tag">MP4</span>
-                                <span class="tag">AVI</span>
-                                <span class="tag">MOV</span>
-                                <span class="tag">MKV</span>
-                                <span class="tag">WebM</span>
-                            </div>
-                        </div>
-                        <div>
-                            <h4 style="color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.875rem;">Audio</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
-                                <span class="tag">MP3</span>
-                                <span class="tag">WAV</span>
-                                <span class="tag">M4A</span>
-                                <span class="tag">FLAC</span>
-                                <span class="tag">AAC</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Performance Tips -->
-                <div class="form-group">
-                    <label class="form-label">Performance Tips</label>
-                    <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius); padding: 1rem;">
-                        <ul style="margin: 0; padding-left: 1.5rem; color: #c7d2fe; font-size: 0.875rem;">
-                            <li><strong>Tiny/Base:</strong> Fast processing, good for testing</li>
-                            <li><strong>Small/Medium:</strong> Best balance of speed and quality</li>
-                            <li><strong>Large:</strong> Highest quality, requires more time and memory</li>
-                            <li><strong>GPU:</strong> Significantly faster with CUDA-compatible GPU</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Output Files Section -->
-        {% if files %}
-        <div class="card fade-in-up output-files">
-            <div class="card-header">
-                <div class="card-icon">📥</div>
-                <h2 class="card-title">Generated Files ({{ files|length }})</h2>
-            </div>
-            
-            <div class="file-list">
-                {% for file in files[:10] %}
-                <div class="file-item">
-                    <div class="file-info">
-                        <div class="file-icon">
-                            {% set ext = file.split('.')[-1].upper() %}
-                            {{ ext[:3] }}
-                        </div>
-                        <div class="file-details">
-                            <h4>{{ file.split('/')[-1] }}</h4>
-                            <p>{{ ext }} file • Click to download</p>
-                        </div>
-                    </div>
-                    <a href="{{ url_for('download_output', filename=file) }}" class="btn btn-secondary">
-                        <span>⬇️</span>
-                        Download
-                    </a>
-                </div>
-                {% endfor %}
-                
-                {% if files|length > 10 %}
-                <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
-                    ... and {{ files|length - 10 }} more files
-                    <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary" style="margin-left: 1rem;">View All</a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Footer -->
-        <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
-            <p>Professional Subtitle Tool • Powered by OpenAI Whisper • 100% Offline Processing</p>
-            <p style="margin-top: 0.5rem;">Your privacy is protected - all processing happens locally on your machine</p>
+            <p>Profesyonel Altyazı Aracı • OpenAI Whisper ve Gelişmiş TTS tarafından desteklenmektedir • %100 Çevrimdışı İşleme</p>
+            <p style="margin-top: 0.5rem;">Gizliliğiniz korunur - tüm işlemler cihazınızda yerel olarak gerçekleşir</p>
         </footer>
     </div>
 
