@@ -32,10 +32,24 @@
                             <p>{{ ext }} dosyası • İndirmek için tıklayın</p>
                         </div>
                     </div>
-                    <a href="{{ url_for('download_output', filename=file) }}" class="btn btn-secondary">
-                        <span>⬇️</span>
-                        İndir
-                    </a>
+                    <div class="file-actions">
+                        {% set file_extension = file.split('.')[-1].lower() %}
+                        {% if file_extension == 'mp4' or file_extension == 'webm' or file_extension == 'mov' or file_extension == 'avi' or file_extension == 'mkv' %}
+                        <button class="btn btn-secondary preview-btn" data-file-url="{{ url_for('download_output', filename=file) }}" data-file-type="video">
+                            <span>👁️</span>
+                            Önizle
+                        </button>
+                        {% elif file_extension == 'srt' or file_extension == 'vtt' or file_extension == 'ass' or file_extension == 'txt' %}
+                        <button class="btn btn-secondary preview-btn" data-file-url="{{ url_for('download_output', filename=file) }}" data-file-type="text">
+                            <span>👁️</span>
+                            Önizle
+                        </button>
+                        {% endif %}
+                        <a href="{{ url_for('download_output', filename=file) }}" class="btn btn-primary">
+                            <span>⬇️</span>
+                            İndir
+                        </a>
+                    </div>
                 </div>
                 {% endfor %}
                 
@@ -57,5 +71,18 @@
             <p style="margin-top: 0.5rem;">Gizliliğiniz korunur - tüm işlemler cihazınızda yerel olarak gerçekleşir</p>
         </footer>
     </div>
+
+    <!-- The Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modalTitle">Dosya Önizlemesi</h2>
+            <div id="modalBody" class="modal-body">
+                <!-- İçerik buraya yüklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

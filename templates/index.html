@@ -63,13 +63,17 @@
 
                 <!-- Tab Navigation -->
                 <div class="tab-navigation" style="margin-bottom: 2rem;">
-                    <button class="tab-btn active" onclick="switchTab('basic')">
+                    <button class="tab-btn active" onclick="switchTab('basic', event)">
                         <span>📝</span>
                         Temel Altyazılar
                     </button>
-                    <button class="tab-btn" onclick="switchTab('multilingual')">
+                    <button class="tab-btn" onclick="switchTab('multilingual', event)">
                         <span>🌍</span>
                         Çok Dilli TTS
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('record_audio', event)">
+                        <span>🎤</span>
+                        Video & Ses Kaydı
                     </button>
                 </div>
 
@@ -263,6 +267,85 @@
                     </form>
                 </div>
 
+                <!-- New Tab for Video and Audio Recording -->
+                <div id="record_audioTab" class="tab-content">
+                    <form id="recordAudioForm" method="post" action="{{ url_for('record_and_process') }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label class="form-label">Video Dosyası Yükle (İsteğe Bağlı)</label>
+                            <div class="file-upload">
+                                <div class="file-upload-icon">🎬</div>
+                                <div class="file-upload-text">Video dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
+                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, WebM ve daha fazlasını destekler</div>
+                                <input type="file" id="recordVideoInput" name="video_file" class="file-input" accept="video/*">
+                            </div>
+                            <small class="text-muted">Kayıt yaptığınızda senkronizasyon için bir video ekleyebilirsiniz.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Ses Kaydı Yapın</label>
+                            <div class="audio-recorder-controls">
+                                <button type="button" id="startRecordingBtn" class="btn btn-success">🎤 Kaydı Başlat</button>
+                                <button type="button" id="stopRecordingBtn" class="btn btn-danger" disabled>⏹️ Kaydı Durdur</button>
+                                <button type="button" id="saveRecordingBtn" class="btn btn-primary" disabled>✅ Kaydı Bitir ve İşle</button>
+                            </div>
+                            <div id="recordingStatus" style="margin-top: 1rem; font-style: italic; color: var(--text-muted);">Hazır</div>
+                            <audio id="audioPlayback" controls style="width: 100%; margin-top: 1rem; display: none;"></audio>
+                        </div>
+
+                        <!-- Ortak altyazı ve model ayarları -->
+                        <div class="form-group">
+                            <label class="form-label">Altyazı Ayarları</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label for="record_language" class="form-label">Algılama Dili</label>
+                                    <input type="text" id="record_language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr...">
+                                </div>
+                                <div>
+                                    <label for="record_style" class="form-label">Altyazı Stili</label>
+                                    <select id="record_style" name="style" class="form-select">
+                                        <option value="default">Varsayılan</option>
+                                        <option value="bold">Kalın</option>
+                                        <option value="elegant">Zarif</option>
+                                        <option value="cinema">Sinema</option>
+                                        <option value="modern">Modern</option>
+                                        <option value="minimal">Minimal</option>
+                                        <option value="terminal">Terminal</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label for="record_model" class="form-label">Whisper Modeli</label>
+                                    <select id="record_model" name="model" class="form-select">
+                                        <option value="tiny">Tiny (Hızlı)</option>
+                                        <option value="base" selected>Base (Dengeli)</option>
+                                        <option value="small">Small (İyi Kalite)</option>
+                                        <option value="medium">Medium (Yüksek Kalite)</option>
+                                        <option value="large">Large (En İyi Kalite)</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; justify-content: center;">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="record_gpu" name="gpu" class="checkbox">
+                                        <label for="record_gpu">GPU hızlandırmayı etkinleştir</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="record_embed_subtitles" name="embed_subtitles" class="checkbox" checked>
+                                        <label for="record_embed_subtitles">Altyazıları videoya göm</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary" style="flex: 1;" disabled>İşle</button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- Common Action Buttons -->
                 <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
                     <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary">
@@ -308,6 +391,16 @@
                                 <li>➕ Daha Fazlası!</li>
                             </ul>
                         </div>
+                        <div class="feature-column">
+                            <h4>🎤 Video & Ses Kaydı</h4>
+                            <ul>
+                                <li>✅ Video yükleyin ve kendi sesinizi kaydedin</li>
+                                <li>✅ Kaydedilen sesten altyazı oluşturun</li>
+                                <li>✅ Orijinal videoyla senkronize edin</li>
+                                <li>✅ Tek dilde altyazı ve video çıktısı</li>
+                                <li>✨ Kişiselleştirilmiş içerik</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -339,8 +432,9 @@
                             <li>Python 3.7+ gerekli paketlerle birlikte</li>
                             <li>FFmpeg/FFprobe yüklü ve PATH'te</li>
                             <li>Minimum 4GB RAM (8GB önerilir)</li>
-                            <li>CUDA destekli GPU (isteğe bağlı)</li>
+                            <li>GPU ile CUDA desteği (isteğe bağlı)</li>
                             <li><strong>TTS için:</strong> Ses sentezi için internet bağlantısı</li>
+                            <li><strong>Ses Kaydı için:</strong> Çalışır durumda bir mikrofon</li>
                         </ul>
                     </div>
                 </div>
@@ -355,6 +449,7 @@
                             <li><strong>Edge TTS:</strong> Daha yüksek kalite, internet gerektirir</li>
                             <li><strong>Google TTS:</strong> Daha hızlı, test için iyi</li>
                             <li><strong>GPU:</strong> Önemli ölçüde daha hızlı transkripsiyon</li>
+                            <li><strong>Ses Kaydı:</strong> Mikrofon kalitesi ve ortam gürültüsü transkripsiyonu etkiler.</li>
                         </ul>
                     </div>
                 </div>
