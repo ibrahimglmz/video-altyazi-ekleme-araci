@@ -709,6 +709,8 @@ class SubtitleTool {
         this.audioPlayback = document.getElementById('audioPlayback');
         this.recordVideoInput = document.getElementById('recordVideoInput');
         this.recordAudioForm = document.getElementById('recordAudioForm');
+        this.videoPlayback = document.getElementById('videoPlayback'); // New video element
+        this.videoPlaybackContainer = document.querySelector('.video-playback-container'); // New container
 
         // Also need to get the file upload div for the record video input
         this.recordVideoFileUpload = this.recordAudioForm.querySelector('.file-upload');
@@ -734,6 +736,12 @@ class SubtitleTool {
             this.recordAudioForm.addEventListener('submit', (e) => this.handleRecordAndProcess(e));
         }
 
+        // Handle video file selection for recording tab
+        if (this.recordVideoInput) {
+            console.log('initAudioRecording: Binding change event for recordVideoInput to load video.');
+            this.recordVideoInput.addEventListener('change', (e) => this.handleRecordVideoSelect(e));
+        }
+
         // Enable/disable submit button based on recorded audio
         if (this.audioPlayback) {
             console.log('initAudioRecording: Binding play/pause events for audioPlayback.');
@@ -749,6 +757,30 @@ class SubtitleTool {
             });
         }
         console.log('initAudioRecording: Audio recording initialization complete.');
+    }
+
+    handleRecordVideoSelect(e) {
+        console.log('handleRecordVideoSelect: Video file selected for recording tab.');
+        const files = e.target.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (this.videoPlaybackContainer) {
+                this.videoPlaybackContainer.style.display = 'block';
+                this.videoPlayback.src = URL.createObjectURL(file);
+                this.videoPlayback.load();
+                console.log(`handleRecordVideoSelect: Video loaded: ${file.name}`);
+            }
+            // Also update the file upload UI for visual feedback
+            this.updateFileUploadUI(file, this.recordVideoFileUpload);
+            this.validateFile(file, this.recordVideoFileUpload);
+        } else {
+            if (this.videoPlaybackContainer) {
+                this.videoPlaybackContainer.style.display = 'none';
+                this.videoPlayback.src = '';
+            }
+            this.resetFileUploadUI(this.recordVideoFileUpload);
+            console.log('handleRecordVideoSelect: No video file selected, video player hidden.');
+        }
     }
 
     async startRecording() {
@@ -783,6 +815,13 @@ class SubtitleTool {
             this.recordAudioForm.querySelector('button[type="submit"]').disabled = true; // Disable process until save
             this.showMessage('Ses kaydı başlatıldı!', 'info');
             console.log('startRecording: Recording started. UI updated.');
+            
+            // Start video playback if a video is loaded
+            if (this.videoPlayback && !this.videoPlayback.paused && this.videoPlayback.src) {
+                this.videoPlayback.play();
+                console.log('startRecording: Video playback started.');
+            }
+
         } catch (err) {
             console.error('startRecording: Mikrofon erişimi reddedildi veya hata oluştu:', err);
             this.showMessage('Mikrofon erişimi reddedildi veya hata oluştu.', 'error');
@@ -799,6 +838,13 @@ class SubtitleTool {
             this.stopRecordingBtn.disabled = true;
             this.showMessage('Ses kaydı durduruldu.', 'info');
             console.log('stopRecording: Recording stopped. UI updated.');
+
+            // Pause video playback if video is playing
+            if (this.videoPlayback && !this.videoPlayback.paused) {
+                this.videoPlayback.pause();
+                console.log('stopRecording: Video playback paused.');
+            }
+
         } else {
             console.warn('stopRecording: MediaRecorder not active or not in recording state.', {recorderState: this.mediaRecorder?.state});
         }
@@ -1018,6 +1064,39 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/"/g, "&quot;")
             .replace(/\'/g, "&#039;");
     }
+
+    // Handle individual file deletion
+    document.querySelectorAll('.delete-file-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const fileName = e.target.dataset.fileName;
+            console.log(`delete-file-btn: Delete button clicked for file: ${fileName}.`);
+
+            if (!confirm(`Are you sure you want to delete the file: ${fileName}?`)) {
+                console.log('delete-file-btn: File deletion cancelled by user.');
+                return;
+            }
+
+            try {
+                console.log(`delete-file-btn: Sending delete request for file: ${fileName}.`);
+                const response = await fetch(`/delete_file/${fileName}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert(`${fileName} başarıyla silindi!`);
+                    console.log(`delete-file-btn: File ${fileName} deleted successfully, reloading page.`);
+                    window.location.reload();
+                } else {
+                    const errorText = await response.text();
+                    console.error(`delete-file-btn: Failed to delete file ${fileName}. Status: ${response.status}, Response: ${errorText}`);
+                    alert(`Dosya silinemedi: ${fileName}. Hata: ${errorText.substring(0, 100)}`);
+                }
+            } catch (error) {
+                console.error(`delete-file-btn: Dosya silinirken hata oluştu: ${fileName}`, error);
+                alert(`Dosya silinirken hata oluştu: ${fileName}. Hata: ${error.message}`);
+            }
+        });
+    });
 });
 
 // Add some utility functions
