@@ -5,6 +5,7 @@ import asyncio
 import threading
 from datetime import datetime
 import subprocess
+import json
 
 # Import the core subtitle generator from server.py
 from server import OfflineSubtitleGenerator, SubtitleStyle, LanguageCode, MultilingualTTSProcessor, TTSEngine
@@ -31,7 +32,6 @@ def get_subtitle_generator():
     global subtitle_generator
     if subtitle_generator is None:
         # Ensure to set appropriate model, use_gpu, enhance_audio defaults
-        # These can be overridden by form submissions
         subtitle_generator = OfflineSubtitleGenerator(whisper_model="base", use_gpu=False, enhance_audio=True)
         print("[INFO] OfflineSubtitleGenerator başlatıldı.")
     return subtitle_generator
@@ -111,7 +111,8 @@ async def upload_file():
             flash(f"Dosya kaydedilirken hata oluştu: {str(e)}", "error")
             return redirect(url_for('index', _external=True))
 
-        output_formats = request.form.getlist('formats') # Changed to 'formats'
+        output_formats_str = request.form.get('formats', 'srt') # Get formats as string
+        output_formats = [fmt.strip() for fmt in output_formats_str.split(',')] # Split and clean
         subtitle_style = request.form.get('style', 'default') # Changed to 'style'
         language = request.form.get('language', 'auto')
         whisper_model = request.form.get('model', 'base') # Changed to 'model'
@@ -131,7 +132,7 @@ async def upload_file():
         try:
             generator = get_subtitle_generator()
             generator.model_name = whisper_model
-            generator.use_gpu = use_gpu
+            generator.use_gpu = False # Force GPU usage to False due to CTranslate2 compilation issues
             generator.enhance_audio = not no_audio_enhance
             generator.tts_processor = get_tts_processor() # Ensure TTS processor is set
             print("[INFO] /upload: SubtitleGenerator ayarları güncellendi.")
@@ -172,16 +173,21 @@ async def upload_file():
                                 include_ts=('txt' in output_formats)
                             )
                             print(f"[INFO] /upload: Tekli video/ses işleme tamamlandı. Sonuçlar: {results}")
-                        flash('Video başarıyla işlendi!', 'success')
+                        # Store success result in a file for the main thread to read
+                        result_file = session_output_dir / "processing_result.json"
+                        with open(result_file, 'w') as f:
+                            json.dump({"success": True, "results": results}, f)
                     except Exception as e:
                         print(f"[ERROR] /upload: Video işlenirken hata oluştu: {str(e)}")
-                        flash(f'Video işlenirken hata oluştu: {str(e)}', 'error')
+                        # Store error result in a file for the main thread to read
+                        result_file = session_output_dir / "processing_result.json"
+                        with open(result_file, 'w') as f:
+                            json.dump({"success": False, "error": str(e)}, f)
                     finally:
                         if filepath.exists():
                             filepath.unlink()
                             print(f"[INFO] /upload: Geçici dosya silindi: {filepath}")
-                        with app.app_context():
-                            print(f"[INFO] Görev {task_id} tamamlandı.")
+                        print(f"[INFO] Görev {task_id} tamamlandı.")
                 asyncio.run(_run())
 
             processing_thread = threading.Thread(target=run_processing)
@@ -269,7 +275,7 @@ async def record_and_process():
 
         generator = get_subtitle_generator()
         generator.model_name = whisper_model
-        generator.use_gpu = use_gpu
+        generator.use_gpu = False # Force GPU usage to False due to CTranslate2 compilation issues
         generator.enhance_audio = True
         generator.tts_processor = get_tts_processor()
         print("[INFO] /record_and_process: SubtitleGenerator ayarları güncellendi.")
@@ -295,14 +301,17 @@ async def record_and_process():
                         include_ts=False,
                     )
                     print(f"[INFO] /record_and_process: Altyazı üretme tamamlandı. Sonuçlar: {results}")
-                    flash('Video ve kaydedilen ses başarıyla işlendi, altyazılar oluşturuldu!', 'success')
+                    with app.app_context(): # Wrapped flash message in app_context
+                        flash('Video ve kaydedilen ses başarıyla işlendi, altyazılar oluşturuldu!', 'success')
                 except subprocess.CalledProcessError as e:
                     error_output = e.stderr.decode('utf-8') if e.stderr else 'Bilinmeyen FFmpeg hatası.'
                     print(f"[ERROR] /record_and_process: FFmpeg hatası: {error_output}")
-                    flash(f'FFmpeg hatası: {error_output}', 'error')
+                    with app.app_context(): # Wrapped flash message in app_context
+                        flash(f'FFmpeg hatası: {error_output}', 'error')
                 except Exception as e:
                     print(f"[ERROR] /record_and_process: Ses ve video işlenirken hata oluştu: {str(e)}")
-                    flash(f'Ses ve video işlenirken hata oluştu: {str(e)}', 'error')
+                    with app.app_context(): # Wrapped flash message in app_context
+                        flash(f'Ses ve video işlenirken hata oluştu: {str(e)}', 'error')
                 finally:
                     if temp_video_path and temp_video_path.exists():
                         temp_video_path.unlink()
@@ -357,16 +366,18 @@ def clear_files():
                             print(f"[INFO] Alt dizin silindi: {sub_item}")
                     item.rmdir()
                     print(f"[INFO] Dizin silindi: {item}")
-        flash('Tüm yüklenen ve çıktı dosyaları temizlendi!', 'success')
+        with app.app_context():
+            flash('Tüm yüklenen ve çıktı dosyaları temizlendi!', 'success')
         print("[INFO] Tüm dosyalar başarıyla temizlendi.")
     except Exception as e:
         print(f"[ERROR] Dosyalar temizlenirken hata oluştu: {str(e)}")
-        flash(f'Dosyalar temizlenirken hata oluştu: {str(e)}', 'error')
+        with app.app_context():
+            flash(f'Dosyalar temizlenirken hata oluştu: {str(e)}', 'error')
     return redirect(url_for('index', _external=True))
 
 
 if __name__ == '__main__':
     print("[INFO] Flask uygulaması başlatılıyor...")
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5201)
     print("[INFO] Flask uygulaması kapatıldı.")
 

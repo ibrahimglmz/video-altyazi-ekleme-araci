@@ -1,8 +1,0 @@
-﻿1
-00:00:02,480 --> 00:00:04,960
-Ses bir iki üç deneme bir iki üç.
-
-2
-00:00:05,200 --> 00:00:07,919
-Tes bir iki üç ses deneme bir iki üç.
-

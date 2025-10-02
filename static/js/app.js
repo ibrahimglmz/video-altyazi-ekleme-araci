@@ -260,55 +260,12 @@ class SubtitleTool {
         if (!preview) return;
 
         const styles = {
-            default: {
-                fontFamily: 'Arial, sans-serif',
+            poppins: {
+                fontFamily: 'Poppins',
                 fontSize: '24px',
                 color: '#FFFFFF',
                 backgroundColor: 'rgba(0, 0, 0, 0.7)',
                 textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
-            },
-            bold: {
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '28px',
-                color: '#FFFFFF',
-                backgroundColor: 'rgba(34, 34, 34, 0.85)',
-                textShadow: '3px 3px 6px rgba(0, 0, 0, 0.9)',
-                fontWeight: 'bold'
-            },
-            elegant: {
-                fontFamily: 'Times New Roman, serif',
-                fontSize: '26px',
-                color: '#F5F5DC',
-                backgroundColor: 'rgba(47, 47, 47, 0.7)',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.6)'
-            },
-            cinema: {
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '32px',
-                color: '#FFD700',
-                backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                textShadow: '2px 2px 4px rgba(0, 0, 0, 1)'
-            },
-            modern: {
-                fontFamily: 'Roboto, sans-serif',
-                fontSize: '24px',
-                color: '#00FF41',
-                backgroundColor: 'rgba(26, 26, 26, 0.7)',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.8)'
-            },
-            minimal: {
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '20px',
-                color: '#FFFFFF',
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                textShadow: 'none'
-            },
-            terminal: {
-                fontFamily: 'Courier New, monospace',
-                fontSize: '22px',
-                color: '#00FF00',
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                textShadow: '0 0 5px rgba(0, 255, 0, 0.5)'
             }
         };
 
@@ -999,7 +956,75 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log(`DOMContentLoaded: Initial tab set to: ${initialTab}.`);
     switchTab(initialTab);
     console.log('DOMContentLoaded: Application initialized.');
+    
+    // Check for processing results every 2 seconds
+    checkProcessingResults();
 });
+
+// Function to check for processing results
+function checkProcessingResults() {
+    // Get all task directories from the output folder
+    fetch('/list_outputs')
+        .then(response => response.text())
+        .then(html => {
+            // Parse the HTML to find task directories
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const fileLinks = doc.querySelectorAll('a[href*="/download/"]');
+            
+            // Look for processing result files
+            fileLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.includes('processing_result.json')) {
+                    // Found a result file, fetch it
+                    fetch(href)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showMessage('Video başarıyla işlendi!', 'success');
+                            } else {
+                                showMessage(`Video işlenirken hata oluştu: ${data.error}`, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching processing result:', error);
+                        });
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error checking processing results:', error);
+        });
+    
+    // Check again in 2 seconds
+    setTimeout(checkProcessingResults, 2000);
+}
+
+// Function to show flash messages
+function showMessage(message, type) {
+    // Remove existing messages
+    const existingMessages = document.querySelectorAll('.message');
+    existingMessages.forEach(msg => msg.remove());
+    
+    // Create new message
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message message-${type} fade-in-up`;
+    messageDiv.innerHTML = `
+        <span>${type === 'success' ? '✓' : '✗'}</span>
+        ${message}
+    `;
+    
+    // Insert after header
+    const header = document.querySelector('.header');
+    header.insertAdjacentElement('afterend', messageDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.remove();
+        }
+    }, 5000);
+}
 
 // Modal functionality for file previews (on files.html)
 document.addEventListener('DOMContentLoaded', () => {

@@ -10,7 +10,7 @@ ffmpeg-python>=0.2.0
 moviepy>=1.0.3
 
 # Web Framework (for server.py)
-Flask>=2.3.0
+Flask[async]>=2.3.0
 Werkzeug>=2.3.0
 
 # TTS Dependencies
