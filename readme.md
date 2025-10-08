@@ -1,204 +1,232 @@
-# 🎬 Profesyonel Video Altyazı Aracı (Çevrimdışı & AI Destekli)
+# 🎬 Altyazı Oluşturucu - Kırmızı Arka Plan Stili
 
 <div align="center">
 
-**AI destekli, tamamen çevrimdışı altyazı ve çok dilli TTS oluşturma aracı**
+**AI destekli, tamamen çevrimdışı altyazı oluşturma aracı**
 
-OpenAI Whisper kullanarak videolarınıza profesyonel altyazılar ekleyin, metinleri konuşmaya çevirin ve çok dilli videolar oluşturun - internet bağlantısı gerektirmez (TTS hariç)!
+Kırmızı arka planlı beyaz metinlerle videolarınıza profesyonel altyazılar ekleyin!
+
+![GitHub](https://img.shields.io/badge/GitHub-Açık_Kaynak-green)
+![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
+![Whisper](https://img.shields.io/badge/OpenAI-Whisper-orange)
+![Offline](https://img.shields.io/badge/100%25-Çevrimdışı-red)
 
 </div>
-
----
-
-## 🚀 Hızlı Başlangıç
-
-Bu proje, hem Komut Satırı Arayüzü (CLI) hem de kullanıcı dostu bir Web Arayüzü sunar.
-
-### Web Arayüzü ile Başlatma
-
-Web arayüzü ile hızlıca başlamak için aşağıdaki adımları takip edin:
-
-1.  **Sanal ortamınızı etkinleştirin** (eğer etkin değilse):
-    ```bash
-    source .venv/bin/activate
-    ```
-2.  **Flask uygulamasını başlatın**:
-    ```bash
-    python web_app.py
-    ```
-3.  Tarayıcınızda `http://127.0.0.1:5001/` adresine gidin.
-
-Artık web arayüzü üzerinden dosyalarınızı yükleyebilir ve altyazı/TTS işlemlerini gerçekleştirebilirsiniz!
 
 ---
 
 ## ✨ Özellikler
 
-### Temel Altyazı Oluşturma (CLI & Web)
+### 🎯 **Tek Stil, Mükemmel Sonuç**
+- **Kırmızı arka plan (#DC143C) + Beyaz metin** - Görünür ve profesyonel
+- **Arial Bold font** - Net ve okunaklı
+- **Merkezi hizalama** - Estetik görünüm
+- **Otomatik satır bölme** - Akıllı metin düzenleme
 
-*   🤖 **AI Destekli Transkripsiyon**: OpenAI Whisper ve faster-whisper desteği ile yüksek doğrulukta ses/video transkripsiyonu.
-*   🌐 **Tamamen Çevrimdışı**: Temel transkripsiyon ve altyazı gömme işlemleri için internet bağlantısı gerektirmez.
-*   🎨 **7 Profesyonel Altyazı Stili**: Cinema, YouTube, Netflix ve daha fazlası gibi özelleştirilebilir stil önayarları.
-*   📄 **Çoklu Çıktı Formatları**: SRT, VTT, ASS, TXT ve videoya gömülü altyazı çıktıları.
-*   🎯 **Yüksek Doğruluk**: Gelişmiş ses işleme algoritmaları ve gürültü azaltma.
-*   ⚡ **Hızlı İşlem**: GPU desteği (uygun donanım ile) ve optimize edilmiş performans.
-*   📁 **Dizin İşleme**: Klasördeki tüm medya dosyalarını toplu olarak işleme yeteneği.
+### 🚀 **Güçlü AI İşleme**
+- **OpenAI Whisper** entegrasyonu
+- **5 farklı model boyutu** (tiny → large)
+- **GPU hızlandırma** desteği
+- **Çok dilli transkripsiyon** (12+ dil)
 
-### Çok Dilli Metin-Konuşma (TTS) & Video Oluşturma (Web)
-
-*   🎤 **Metin-Konuşma (TTS)**: Oluşturulan altyazıları 12 farklı dilde yüksek kaliteli sesli konuşmaya dönüştürün.
-*   🌍 **Çok Dilli Video Çıktısı**: Orijinal videoyu, seçilen dillerdeki TTS ses parçalarıyla birleştirin.
-*   🔊 **Orijinal Ses Karıştırma**: TTS sesiyle orijinal video sesini ayarlanabilir bir oranda karıştırın.
-*   🎬 **Altyazıları Gömmek**: Oluşturulan altyazıları doğrudan çok dilli videolara gömün.
-*   ⚙️ **Birden Çok TTS Motoru**: Google TTS (gTTS) ve Edge TTS desteği (Edge TTS daha doğal sesler sunar ve internet bağlantısı gerektirir).
-
----
-
-## 🎬 Orijinal ve Altyazılı Görüntü Karşılaştırması
-
-<div align="center">
-
-Bu iki görsel, **altyazı ekleme öncesi ve sonrası** videonun nasıl göründüğünü net bir şekilde gösteriyor.
-
-<br>
-
-| Orijinal Görüntü | Altyazılı Görüntü |
-| :---: | :---: |
-| ![Orijinal Görüntü](assets/Screenshot%202025-08-18%20at%2015.02.24.png) | ![Altyazılı Görüntü](assets/Screenshot%202025-08-18%20at%2015.02.51.png) |
-
-</div>
+### 📄 **Çoklu Format Desteği**
+- **Video Girdi**: MP4, AVI, MOV, MKV, WebM, FLV
+- **Ses Girdi**: MP3, WAV, FLAC, AAC, OGG, M4A
+- **Çıktı Formatları**: SRT, VTT, ASS, TXT, Gömülü Video
 
 ---
 
-## 🛠️ Kurulum
+## 🚀 Hızlı Başlangıç
 
-### Ön Gereksinimler
-
-*   **Python 3.7 veya üzeri**: `python3 --version` komutu ile kontrol edebilirsiniz.
-*   **FFmpeg**: Video ve ses işleme için gereklidir. Sisteminizin PATH ortam değişkeninde bulunmalıdır. [FFmpeg resmi sitesinden](https://ffmpeg.org/download.html) indirebilirsiniz.
-*   **GPU desteği için CUDA (İsteğe Bağlı)**: Eğer NVIDIA GPU'nuz varsa ve daha hızlı işlem yapmak istiyorsanız [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads) kurmanız önerilir.
-
-### Adım Adım Kurulum
-
-1.  **Projeyi klonlayın**:
-    ```bash
-    git clone [https://github.com/username/offline-subtitle-tool.git](https://github.com/username/offline-subtitle-tool.git)
-    cd offline-subtitle-tool
-    ```
-    *(GitHub reposu placeholder. Kendi repo URL'inizle değiştirin.)*
-
-2.  **Sanal ortam oluşturun**:
-    ```bash
-    python3 -m venv .venv
-    ```
-
-3.  **Sanal ortamı etkinleştirin**:
-    *   **macOS/Linux**:
-        ```bash
-        source .venv/bin/activate
-        ```
-    *   **Windows**:
-        ```bash
-        .venv\Scripts\activate
-        ```
-
-4.  **Gerekli paketleri yükleyin**:
-    ```bash
-    python3 -m pip install --upgrade pip
-    python3 -m pip install -r requirements.txt
-    ```
-
----
-
-## 🖥️ Kullanım
-
-Projenin iki ana kullanım şekli vardır: Web Arayüzü ve Komut Satırı Arayüzü (CLI).
-
-### 🌐 Web Arayüzü Kullanımı
-
-Kullanıcı dostu web arayüzü ile işlemleri kolayca yapabilirsiniz.
-
-1.  **Uygulamayı başlatın**:
-    ```bash
-    python web_app.py
-    ```
-    Uygulama varsayılan olarak `http://127.0.0.1:5001/` adresinde çalışacaktır.
-2.  **Dosya Yükleme ve Ayarlar**:
-    *   Web arayüzünde "Video veya Ses Dosyası Seçin" alanından medya dosyanızı yükleyin.
-    *   İstediğiniz çıktı formatlarını (`video`, `srt`, `vtt`, `ass`, `txt`), dili, altyazı stilini ve Whisper model boyutunu seçin.
-    *   Gelişmiş seçenekleri (GPU hızlandırma, ses geliştirme) etkinleştirebilirsiniz.
-3.  **Temel Altyazı Oluşturma**:
-    *   "Temel Altyazılar" sekmesini kullanarak tek dilde altyazı oluşturun ve videoya gömün.
-    *   "Altyazıları Oluştur" düğmesine tıklayın. İşlem tamamlandığında, oluşturulan dosyaları web arayüzünde görüntüleyebilir veya indirebilirsiniz.
-4.  **Çok Dilli TTS Video Oluşturma**:
-    *   "Çok Dilli TTS" sekmesini kullanarak birden çok dilde TTS ses parçalarıyla videolar oluşturun.
-    *   Hedef dilleri, TTS motorunu (Edge TTS veya Google TTS) ve orijinal ses karıştırma oranını seçin.
-    *   "Çok Dilli Videolar Oluştur" düğmesine tıklayın.
-
-### 命令行工具 (CLI) Kullanımı
-
-Daha gelişmiş kullanım senaryoları ve betikleme için CLI'yi tercih edebilirsiniz. Ana CLI aracı `server.py` dosyasıdır.
-
+### 1️⃣ Sanal Ortamı Etkinleştirin
 ```bash
-python server.py -i <girdi_dosyasi_veya_klasoru> -o <cikti_klasoru> [SEÇENEKLER]
+source .venv/bin/activate
 ```
 
-**Temel Parametreler:**
+### 2️⃣ Web Uygulamasını Başlatın
+```bash
+python web_app.py
+```
 
-*   `-i`, `--input` (Zorunlu): İşlenecek video/ses dosyası yolu veya medya dosyalarını içeren klasör yolu.
-*   `-o`, `--output` (Varsayılan: `output`): Çıktı dosyalarının kaydedileceği dizin.
-*   `--formats` (Varsayılan: `srt,video`): Virgülle ayrılmış çıktı formatları (`video`, `srt`, `vtt`, `ass`, `txt`).
-*   `--style` (Varsayılan: `default`): Altyazı stil önayarı (`default`, `bold`, `elegant`, `cinema`, `modern`, `minimal`, `terminal`).
-*   `--language` (Varsayılan: `auto`): Transkripsiyon dili kodu (`auto`, `en`, `tr`, `es`, vb.) veya otomatik algılama için "auto".
-*   `--model` (Varsayılan: `base`): Whisper model boyutu (`tiny`, `base`, `small`, `medium`, `large`).
-*   `--gpu`: Varsa GPU hızlandırmasını etkinleştirir.
-*   `--no-audio-enhance`: Ses geliştirme filtrelerini devre dışı bırakır.
-*   `--batch`: Giriş klasöründeki tüm medya dosyalarını işler.
-*   `--overwrite`: Mevcut çıktı dosyalarının üzerine yazar.
-*   `--verbose`: Ayrıntılı çıktıyı etkinleştirir.
-
-**Çok Dilli TTS Parametreleri (sadece `server.py`'de desteklenir, web arayüzünde ayrı bir sekmede bulunur):**
-
-*   `--tts-languages`: Virgülle ayrılmış, konuşma sentezi (TTS) için hedef dil kodları (örn: `tr,en,fr`).
-*   `--tts-engine` (Varsayılan: `edge_tts`): Kullanılacak TTS motoru (`gtts` veya `edge_tts`).
-*   `--no-embed-subtitles`: Son videolara altyazıları gömmez.
-*   `--original-audio-mix` (Varsayılan: `0.3`): TTS ile karıştırırken orijinal sesin ses oranı (0.0-1.0).
-
-**Örnek CLI Kullanımı:**
-
-1.  **Tek bir video dosyası için Türkçe altyazı ve videoya gömülü çıktı oluşturma**:
-    ```bash
-    python server.py -i video.mp4 -o output_folder --formats srt,video --style cinema --language tr --model large --gpu
-    ```
-
-2.  **Bir klasördeki tüm ses dosyaları için SRT ve TXT altyazıları oluşturma (toplu işlem)**:
-    ```bash
-    python server.py -i audio_files_folder -o output_transcriptions --formats srt,txt --language en --batch
-    ```
-
-3.  **Çok dilli TTS ile video oluşturma (Türkçe ve İngilizce ses parçaları)**:
-    ```bash
-    python server.py -i my_video.mp4 -o multilingual_output --tts-languages tr,en --tts-engine edge_tts --original-audio-mix 0.4 --formats video,srt
-    ```
-    *(Not: Bu örnek CLI komutu, `server.py`'nin `process_with_multilingual_tts` metodunu çağırır. Web arayüzünde bu, ayrı bir sekmeden kontrol edilir.)*
+### 3️⃣ Tarayıcıda Açın
+**Yerel erişim**: http://127.0.0.1:5214/
 
 ---
 
-## 💡 Performans İpuçları
+## 🖥️ Kullanım Seçenekleri
 
-*   **Model Boyutu**: `tiny` veya `base` modelleri daha hızlıdır ancak daha düşük doğruluk sunar. `large` modeller en yüksek doğruluk için daha yavaş çalışır ve daha fazla kaynak tüketir.
-*   **GPU Hızlandırma**: Uyumlu bir NVIDIA GPU'nuz varsa `--gpu` bayrağını kullanmak işlem süresini önemli ölçüde hızlandırır.
-*   **Ses Geliştirme**: `--no-audio-enhance` bayrağını kullanarak ses geliştirme filtrelerini kapatmak, bazen çok düşük kaliteli seslerde veya çok uzun videolarda performansı artırabilir. Ancak genellikle açık bırakılması önerilir.
-*   **TTS Motoru**: `edge_tts`, `gtts`'ye göre daha doğal ve yüksek kaliteli sesler sunar, ancak genellikle biraz daha yavaş olabilir ve internet bağlantısı gerektirir.
+### 🌐 Web Arayüzü (Önerilen)
+1. **Dosya Yükle**: Video/ses dosyanızı sürükle-bırak ile yükleyin
+2. **Ayarları Seç**: Çıktı formatları, dil, model boyutu
+3. **İşlet**: "Altyazıları Oluştur" butonuna tıklayın
+4. **İndir**: Oluşturulan dosyaları indirin
+
+### 💻 Komut Satırı (CLI)
+```bash
+# Temel kullanım
+python app.py -i video.mp4 -o output_folder
+
+# Gelişmiş seçenekler
+python app.py -i video.mp4 -o output --formats srt,video --model large --gpu
+
+# Toplu işleme
+python app.py -i video_folder --batch --formats srt,vtt,ass
+```
 
 ---
 
-## 🤝 Katkıda Bulunma
+## ⚙️ Kurulum Gereksinimleri
 
-Projenin geliştirilmesine katkıda bulunmak isterseniz, lütfen bir "pull request" (çekme isteği) gönderin veya bir "issue" (sorun) açın. Her türlü katkı memnuniyetle karşılanır!
+### ✅ Ön Gereksinimler
+- **Python 3.7+**
+- **FFmpeg** (PATH'te yüklü)
+- **4GB+ RAM** (8GB önerilir)
+- **GPU**: NVIDIA CUDA (isteğe bağlı)
+
+### 📦 Python Paketleri
+Tüm gerekli paketler `.venv/` klasöründe yüklü:
+- OpenAI Whisper
+- faster-whisper
+- PyTorch & torchaudio
+- Flask (web arayüzü)
+- FFmpeg-python
+- NumPy, tqdm
 
 ---
 
-## 📄 Lisans
+## 🎨 Altyazı Stilini Önizleme
 
-Bu proje MIT Lisansı altında lisanslanmıştır. Daha fazla bilgi için `LICENSE` dosyasına bakın.
+```
+┌─────────────────────────────────────┐
+│                                     │
+│     valizler alınmayacak!           │
+│     Kırmızı arka planlı beyaz metin │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Stil Özellikleri:**
+- **Renk**: Kırmızı arka plan (#DC143C), Beyaz metin (#FFFFFF)
+- **Font**: Arial Bold, 32px
+- **Konumlandırma**: Alt merkezde, uygun kenar boşlukları
+- **Özellikler**: Tam opaklık, siyah kontur
+
+---
+
+## 📋 CLI Parametreleri
+
+```bash
+python app.py [SEÇENEKLER]
+
+Zorunlu:
+  -i, --input          Girdi dosya/klasör yolu
+
+İsteğe Bağlı:
+  -o, --output         Çıktı dizini (varsayılan: output)
+  --formats           Çıktı formatları (varsayılan: srt,video)
+  --language          Dil kodu (varsayılan: auto)
+  --model             Whisper model (varsayılan: base)
+  --gpu               GPU hızlandırmayı etkinleştir
+  --batch             Klasördeki tüm dosyaları işle
+  --no-audio-enhance  Ses geliştirmeyi devre dışı bırak
+  --include-timestamps TXT'ye zaman damgası ekle
+```
+
+---
+
+## 🔧 Performans İpuçları
+
+| Model | Hız | Doğruluk | Kullanım |
+|-------|-----|----------|----------|
+| `tiny` | ⚡⚡⚡ | ⭐⭐ | Hızlı test |
+| `base` | ⚡⚡ | ⭐⭐⭐ | **Önerilen** |
+| `small` | ⚡ | ⭐⭐⭐⭐ | İyi kalite |
+| `medium` | 🐌 | ⭐⭐⭐⭐ | Yüksek kalite |
+| `large` | 🐌🐌 | ⭐⭐⭐⭐⭐ | En iyi kalite |
+
+### 💡 Optimizasyon Tavsiyeleri
+- **GPU**: Büyük dosyalarda 5-10x hız artışı
+- **Ses Geliştirme**: Kaliteyi artırır ama işlem süresini uzatır
+- **Format Seçimi**: Sadece ihtiyacınız olan formatları seçin
+- **Model Boyutu**: İlk test için `base`, final için `large`
+
+---
+
+## 🗂️ Proje Yapısı
+
+```
+video-altyazi-ekleme-araci/
+├── app.py                 # CLI uygulaması
+├── web_app.py            # Flask web arayüzü
+├── templates/
+│   └── index.html        # Web arayüzü şablonu
+├── static/
+│   ├── css/style.css     # Stiller
+│   └── js/app.js         # JavaScript
+├── uploads/              # Yüklenen dosyalar
+├── output/               # Oluşturulan çıktılar
+├── requirements.txt      # Python bağımlılıkları
+└── README.md            # Bu dosya
+```
+
+---
+
+## 🐛 Sorun Giderme
+
+### Web Uygulaması Başlamazsa
+```bash
+# Virtual environment kontrol
+source .venv/bin/activate
+python -c "import flask; print('Flask OK')"
+
+# Port kontrol (5214 kullanılıyor)
+lsof -i :5214
+```
+
+### FFmpeg Bulunamazsa
+```bash
+# macOS için
+brew install ffmpeg
+
+# Kontrol
+ffmpeg -version
+ffprobe -version
+```
+
+### Düşük Performans
+1. **GPU'yu etkinleştirin** (`--gpu` veya web arayüzünde checkbox)
+2. **Küçük model** deneyin (`tiny` veya `base`)
+3. **Ses geliştirmeyi kapatın** (`--no-audio-enhance`)
+4. **Gereksiz formatları** seçmeyin
+
+---
+
+## 🔐 Gizlilik ve Güvenlik
+
+✅ **%100 Çevrimdışı** - İnternet bağlantısı gerektirmez
+✅ **Yerel İşleme** - Dosyalarınız cihazınızda kalır
+✅ **API Yok** - Üçüncü taraf servislere bağımlı değil
+✅ **Açık Kaynak** - Kodlar tamamen şeffaf
+
+---
+
+## 📞 Destek
+
+Herhangi bir sorunla karşılaştığınızda:
+
+1. **Virtual environment** etkin mi kontrol edin
+2. **FFmpeg** kurulu mu doğrulayın  
+3. **Dosya formatı** destekleniyor mu kontrol edin
+4. **Konsol logları** hata mesajları için inceleyin
+
+---
+
+## 🎉 Başarıyla Basitleştirildi!
+
+Bu versiyon **sadece altyazı ekleme** odaklıdır:
+
+- ❌ **Kaldırılan**: TTS, ses kaydı, çoklu dil, karmaşık özellikler
+- ✅ **Korunan**: Temel altyazı oluşturma, kırmızı stil, web arayüzü
+- 🎯 **Odak**: Hızlı, güvenilir ve kolay kullanım
+
+**Artık sadece altyazı oluşturma aracınız hazır!** 🎬

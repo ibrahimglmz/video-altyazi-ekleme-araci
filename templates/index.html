@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profesyonel Altyazı Aracı - Yapay Zeka Destekli Çevrimdışı Altyazı Oluşturucu</title>
-    <meta name="description" content="Tamamen çevrimdışı çalışan, yapay zeka destekli profesyonel altyazı oluşturucu. Gelişmiş stil seçenekleriyle SRT, VTT, ASS altyazıları oluşturun.">
-    
-    <!-- Preload critical resources -->
-    <link rel="preload" href="{{ url_for('static', filename='css/style.css') }}" as="style">
-    <link rel="preload" href="{{ url_for('static', filename='js/app.js') }}" as="script">
+    <title>Altyazı Oluşturucu - Kırmızı Arka Plan Stili</title>
+    <meta name="description" content="Video ve ses dosyalarınıza kırmızı arka planlı altyazılar ekleyin. Tamamen çevrimdışı çalışır.">
     
     <!-- Google Fonts - Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,11 +33,11 @@
     <div class="container">
         <!-- Header -->
         <header class="header fade-in-up">
-            <h1>Profesyonel Altyazı Aracı</h1>
-            <p class="subtitle">Yapay zeka destekli, tamamen çevrimdışı altyazı oluşturma</p>
+            <h1>🎬 Altyazı Oluşturucu</h1>
+            <p class="subtitle">Kırmızı arka planlı altyazılar ile videolarınızı güzelleştirin</p>
             <div class="badge">
                 <div class="badge-icon">🔒</div>
-                <span>%100 Çevrimdışı • API Gerektirmez • Önce Gizlilik</span>
+                <span>%100 Çevrimdışı • API Gerektirmez • Gizlilik Öncelikli</span>
             </div>
         </header>
 
@@ -63,287 +59,79 @@
             <div class="card fade-in-up">
                 <div class="card-header">
                     <div class="card-icon">🎬</div>
-                    <h2 class="card-title">Yükle ve Yapılandır</h2>
+                    <h2 class="card-title">Video Yükle ve Altyazı Oluştur</h2>
                 </div>
 
-                <!-- Tab Navigation -->
-                <div class="tab-navigation" style="margin-bottom: 2rem;">
-                    <button class="tab-btn active" onclick="switchTab('basic', event)">
-                        <span>📝</span>
-                        Temel Altyazılar
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('multilingual', event)">
-                        <span>🌍</span>
-                        Çok Dilli TTS
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('record_audio', event)">
-                        <span>🎤</span>
-                        Video & Ses Kaydı
-                    </button>
-                </div>
+                <form id="subtitleForm" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label class="form-label">Video veya Ses Dosyası Seçin</label>
+                        <div class="file-upload">
+                            <div class="file-upload-icon">📁</div>
+                            <div class="file-upload-text">Dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
+                            <div class="file-upload-hint">MP4, AVI, MOV, MKV, MP3, WAV, M4A ve daha fazlasını destekler</div>
+                            <input type="file" id="fileInput" name="file" class="file-input" accept="video/*,audio/*" required>
+                        </div>
+                    </div>
 
-                <!-- Basic Subtitles Tab -->
-                <div id="basicTab" class="tab-content active">
-                    <form id="subtitleForm" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
-                        <!-- File Upload -->
-                        <div class="form-group">
-                            <label class="form-label">Video veya Ses Dosyası Seçin</label>
-                            <div class="file-upload">
-                                <div class="file-upload-icon">📁</div>
-                                <div class="file-upload-text">Dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
-                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, MP3, WAV, M4A ve daha fazlasını destekler</div>
-                                <input type="file" id="fileInput" name="file" class="file-input" accept="video/*,audio/*" required>
+                    <!-- Output Formats -->
+                    <div class="form-group">
+                        <label for="formats" class="form-label">Çıktı Formatları</label>
+                        <input type="text" id="formats" name="formats" class="form-input" value="srt,video" placeholder="video,srt,vtt,ass,txt">
+                        <small class="text-muted">İstenen çıktı formatlarının virgülle ayrılmış listesi (video,srt,vtt,ass,txt)</small>
+                    </div>
+
+                    <!-- Language and Model Row -->
+                    <div class="form-group">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="language" class="form-label">Dil</label>
+                                <input type="text" id="language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr, es...">
+                                <small class="text-muted">Otomatik algılama için "auto" yazın</small>
+                            </div>
+                            <div>
+                                <label for="model" class="form-label">Whisper Model Boyutu</label>
+                                <select id="model" name="model" class="form-select">
+                                    <option value="tiny">Tiny (Hızlı, Düşük Kalite)</option>
+                                    <option value="base" selected>Base (Dengeli)</option>
+                                    <option value="small">Small (İyi Kalite)</option>
+                                    <option value="medium">Medium (Yüksek Kalite)</option>
+                                    <option value="large">Large (En İyi Kalite, Yavaş)</option>
+                                </select>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Output Formats -->
-                        <div class="form-group">
-                            <label for="formats" class="form-label">Çıktı Formatları</label>
-                            <input type="text" id="formats" name="formats" class="form-input" value="video,srt" placeholder="video,srt,vtt,ass,txt">
-                            <small class="text-muted">İstenen çıktı formatlarının virgülle ayrılmış listesi</small>
-                        </div>
-
-                        <!-- Language and Style Row -->
-                        <div class="form-group">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label for="language" class="form-label">Dil</label>
-                                    <input type="text" id="language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr, es...">
-                                </div>
-                                <div>
-                                    <label for="style" class="form-label">Altyazı Stili</label>
-                                    <select id="style" name="style" class="form-select">
-                                        <option value="poppins" selected>Poppins</option>
-                                    </select>
-                                </div>
+                    <!-- Advanced Options -->
+                    <div class="form-group">
+                        <label class="form-label">Gelişmiş Seçenekler</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="include_timestamps" name="include_timestamps" class="checkbox">
+                                <label for="include_timestamps">TXT çıktısına zaman damgalarını dahil et</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="no_enhance_audio" name="no_enhance_audio" class="checkbox">
+                                <label for="no_enhance_audio">Ses geliştirmeyi devre dışı bırak</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="gpu" name="gpu" class="checkbox">
+                                <label for="gpu">GPU hızlandırmayı etkinleştir (deneysel)</label>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Model Selection -->
-                        <div class="form-group">
-                            <label for="model" class="form-label">Whisper Modeli</label>
-                            <select id="model" name="model" class="form-select">
-                                <option value="tiny">Tiny (Hızlı, Düşük Kalite)</option>
-                                <option value="base" selected>Base (Dengeli)</option>
-                                <option value="small">Small (İyi Kalite)</option>
-                                <option value="medium">Medium (Yüksek Kalite)</option>
-                                <option value="large">Large (En İyi Kalite, Yavaş)</option>
-                            </select>
-                        </div>
+                    <!-- Action Buttons -->
+                    <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 1;">
+                            <span>🚀</span>
+                            Altyazıları Oluştur
+                        </button>
+                    </div>
+                </form>
 
-                        <!-- Advanced Options -->
-                        <div class="form-group">
-                            <label class="form-label">Gelişmiş Seçenekler</label>
-                            <div class="checkbox-group">
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="include_timestamps" name="include_timestamps" class="checkbox">
-                                    <label for="include_timestamps">TXT çıktısına zaman damgalarını dahil et</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="no_enhance_audio" name="no_enhance_audio" class="checkbox">
-                                    <label for="no_enhance_audio">Ses geliştirmeyi devre dışı bırak</label>
-                                </div>
-                                <div class="checkbox-item">
-                                    <input type="checkbox" id="gpu" name="gpu" class="checkbox">
-                                    <label for="gpu">GPU hızlandırmayı etkinleştir</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="submit" id="submitBtn" class="btn btn-primary" style="flex: 1;">
-                                <span>🚀</span>
-                                Altyazıları Oluştur
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Multilingual TTS Tab -->
-                <div id="multilingualTab" class="tab-content">
-                    <form id="multilingualForm" method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
-                        <!-- File Upload -->
-                        <div class="form-group">
-                            <label class="form-label">Video Dosyası Seçin</label>
-                            <div class="file-upload">
-                                <div class="file-upload-icon">🎬</div>
-                                <div class="file-upload-text">Video dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
-                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, WebM ve daha fazlasını destekler</div>
-                                <input type="file" id="multilingualFileInput" name="file" class="file-input" accept="video/*" required>
-                            </div>
-                        </div>
-
-                        <!-- Language Selection -->
-                        <div class="form-group">
-                            <label class="form-label">TTS İçin Hedef Dilleri Seçin</label>
-                            <div class="language-grid">
-                                {% for code, name in supported_languages.items() %}
-                                <div class="language-item">
-                                    <input type="checkbox" id="lang_{{ code }}" name="tts_languages" value="{{ code }}" class="checkbox">
-                                    <label for="lang_{{ code }}">{{ name }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- TTS Engine Selection -->
-                        <div class="form-group">
-                            <label for="tts_engine" class="form-label">TTS Motoru</label>
-                            <select id="tts_engine" name="tts_engine" class="form-select">
-                                <option value="edge_tts" selected>Edge TTS (Yüksek Kalite, Doğal Sesler)</option>
-                                <option value="gtts">Google TTS (Hızlı, İyi Kalite)</option>
-                            </select>
-                        </div>
-
-                        <!-- Audio Mix Settings -->
-                        <div class="form-group">
-                            <label for="original_audio_mix" class="form-label">Orijinal Ses Seviyesi</label>
-                            <input type="range" id="original_audio_mix" name="original_audio_mix" min="0" max="1" step="0.1" value="0.3" class="form-range">
-                            <div class="range-labels">
-                                <span>Sessiz</span>
-                                <span id="audioMixValue">%30</span>
-                                <span>Tam</span>
-                            </div>
-                        </div>
-
-                        <!-- Subtitle Settings -->
-                        <div class="form-group">
-                            <label class="form-label">Altyazı Ayarları</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label for="multilingual_language" class="form-label">Algılama Dili</label>
-                                    <input type="text" id="multilingual_language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr...">
-                                </div>
-                                <div>
-                                    <label for="multilingual_style" class="form-label">Altyazı Stili</label>
-                                    <select id="multilingual_style" name="style" class="form-select">
-                                        <option value="poppins" selected>Poppins</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Model and Options -->
-                        <div class="form-group">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label for="multilingual_model" class="form-label">Whisper Modeli</label>
-                                    <select id="multilingual_model" name="model" class="form-select">
-                                        <option value="tiny">Tiny (Hızlı)</option>
-                                        <option value="base" selected>Base (Dengeli)</option>
-                                        <option value="small">Small (İyi Kalite)</option>
-                                        <option value="medium">Medium (Yüksek Kalite)</option>
-                                        <option value="large">Large (En İyi Kalite)</option>
-                                    </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column; justify-content: center;">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="multilingual_embed_subtitles" name="embed_subtitles" class="checkbox" checked>
-                                        <label for="multilingual_embed_subtitles">Altyazıları videoya göm</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="multilingual_gpu" name="gpu" class="checkbox">
-                                        <label for="multilingual_gpu">GPU hızlandırmayı etkinleştir</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="submit" id="multilingualSubmitBtn" class="btn btn-primary" style="flex: 1;">
-                                <span>🌍</span>
-                                Çok Dilli Videolar Oluştur
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- New Tab for Video and Audio Recording -->
-                <div id="record_audioTab" class="tab-content">
-                    <form id="recordAudioForm" method="post" action="{{ url_for('record_and_process') }}" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label class="form-label">Video Dosyası Yükle (İsteğe Bağlı)</label>
-                            <div class="file-upload">
-                                <div class="file-upload-icon">🎬</div>
-                                <div class="file-upload-text">Video dosyanızı buraya sürükleyin veya göz atmak için tıklayın</div>
-                                <div class="file-upload-hint">MP4, AVI, MOV, MKV, WebM ve daha fazlasını destekler</div>
-                                <input type="file" id="recordVideoInput" name="video_file" class="file-input" accept="video/*">
-                            </div>
-                            <small class="text-muted">Kayıt yaptığınızda senkronizasyon için bir video ekleyebilirsiniz.</small>
-                        </div>
-
-                        <div class="form-group video-playback-container" style="display: none;">
-                            <label class="form-label">Video Önizlemesi</label>
-                            <video id="videoPlayback" controls width="100%" style="border-radius: 8px;"></video>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Ses Kaydı Yapın</label>
-                            <div class="audio-recorder-controls">
-                                <button type="button" id="startRecordingBtn" class="btn btn-success">🎤 Kaydı Başlat</button>
-                                <button type="button" id="stopRecordingBtn" class="btn btn-danger" disabled>⏹️ Kaydı Durdur</button>
-                                <button type="button" id="saveRecordingBtn" class="btn btn-primary" disabled>✅ Kaydı Bitir ve İşle</button>
-                            </div>
-                            <div id="recordingStatus" style="margin-top: 1rem; font-style: italic; color: var(--text-muted);">Hazır</div>
-                            <audio id="audioPlayback" controls style="width: 100%; margin-top: 1rem; display: none;"></audio>
-                        </div>
-
-                        <!-- Ortak altyazı ve model ayarları -->
-                        <div class="form-group">
-                            <label class="form-label">Altyazı Ayarları</label>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label for="record_language" class="form-label">Algılama Dili</label>
-                                    <input type="text" id="record_language" name="language" class="form-input" value="auto" placeholder="otomatik, en, tr...">
-                                </div>
-                                <div>
-                                    <label for="record_style" class="form-label">Altyazı Stili</label>
-                                    <select id="record_style" name="style" class="form-select">
-                                        <option value="poppins" selected>Poppins</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                                <div>
-                                    <label for="record_model" class="form-label">Whisper Modeli</label>
-                                    <select id="record_model" name="model" class="form-select">
-                                        <option value="tiny">Tiny (Hızlı)</option>
-                                        <option value="base" selected>Base (Dengeli)</option>
-                                        <option value="small">Small (İyi Kalite)</option>
-                                        <option value="medium">Medium (Yüksek Kalite)</option>
-                                        <option value="large">Large (En İyi Kalite)</option>
-                                    </select>
-                                </div>
-                                <div style="display: flex; flex-direction: column; justify-content: center;">
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="record_gpu" name="gpu" class="checkbox">
-                                        <label for="record_gpu">GPU hızlandırmayı etkinleştir</label>
-                                    </div>
-                                    <div class="checkbox-item">
-                                        <input type="checkbox" id="record_embed_subtitles" name="embed_subtitles" class="checkbox" checked>
-                                        <label for="record_embed_subtitles">Altyazıları videoya göm</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="display: flex; gap: 1rem; margin-top: 2rem;">
-                            <button type="submit" class="btn btn-primary" style="flex: 1;" disabled>İşle</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Common Action Buttons -->
+                <!-- File Management Buttons -->
                 <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-                    <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary">
-                        <span>📁</span>
-                        Tüm Dosyaları Görüntüle
-                    </a>
                     <a href="#" id="clearBtn" class="btn btn-danger">
                         <span>🗑️</span>
                         Dosyaları Temizle
@@ -351,68 +139,38 @@
                 </div>
             </div>
 
-            <!-- Preview and Info Card -->
+            <!-- Info and Preview Card -->
             <div class="card fade-in-up">
                 <div class="card-header">
-                    <div class="card-icon">👁️</div>
-                    <h2 class="card-title">Önizleme ve Bilgi</h2>
-                </div>
-
-                <!-- Feature Comparison -->
-                <div class="form-group">
-                    <label class="form-label">Özellik Karşılaştırması</label>
-                    <div class="feature-comparison">
-                        <div class="feature-column">
-                            <h4>📝 Temel Altyazılar</h4>
-                            <ul>
-                                <li>✅ SRT/VTT/ASS altyazıları oluşturun</li>
-                                <li>✅ Birden çok stil önayarı</li>
-                                <li>✅ Altyazıları videoya gömün</li>
-                                <li>✅ Metin dosyaları olarak dışa aktarın</li>
-                                <li>⚡ Hızlı işlem</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>🌍 Çok Dilli TTS</h4>
-                            <ul>
-                                <li>✅ Tüm temel altyazı özellikleri</li>
-                                <li>🎤 12 dilde Metin-Konuşma</li>
-                                <li>🎬 TTS ses parçaları içeren video</li>
-                                <li>🔊 Orijinal sesle karıştırın</li>
-                                <li>📦 Tüm diller için toplu dışa aktarma</li>
-                                <li>➕ Daha Fazlası!</li>
-                            </ul>
-                        </div>
-                        <div class="feature-column">
-                            <h4>🎤 Video & Ses Kaydı</h4>
-                            <ul>
-                                <li>✅ Video yükleyin ve kendi sesinizi kaydedin</li>
-                                <li>✅ Kaydedilen sesten altyazı oluşturun</li>
-                                <li>✅ Orijinal videoyla senkronize edin</li>
-                                <li>✅ Tek dilde altyazı ve video çıktısı</li>
-                                <li>✨ Kişiselleştirilmiş içerik</li>
-                            </ul>
-                        </div>
-                    </div>
+                    <div class="card-icon">ℹ️</div>
+                    <h2 class="card-title">Bilgi ve Önizleme</h2>
                 </div>
 
                 <!-- Style Preview -->
                 <div class="form-group">
                     <label class="form-label">Altyazı Stili Önizlemesi</label>
                     <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border-radius: 12px; padding: 2rem; text-align: center; position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center;">
-                        <div class="style-preview" style="padding: 0.75rem 1.5rem; border-radius: 8px; max-width: 90%;">
-                            Altyazılarınız seçilen stil ayarlarıyla<br>bu şekilde görünecektir
+                        <div class="style-preview" style="padding: 0.75rem 1.5rem; border-radius: 8px; max-width: 90%; background-color: #DC143C; color: #FFFFFF; font-weight: bold; font-family: Arial, sans-serif; font-size: 24px;">
+                            valizler alınmayacak!<br>Kırmızı arka planlı beyaz metin
                         </div>
                     </div>
+                    <small class="text-muted" style="display: block; margin-top: 0.5rem; text-align: center;">
+                        Tüm altyazılar bu kırmızı arka plan stiliyle oluşturulur
+                    </small>
                 </div>
 
-                <!-- Supported Languages -->
+                <!-- Features -->
                 <div class="form-group">
-                    <label class="form-label">Desteklenen TTS Dilleri</label>
-                    <div class="language-showcase">
-                        {% for code, name in supported_languages.items() %}
-                        <span class="language-tag">{{ name }}</span>
-                        {% endfor %}
+                    <label class="form-label">Desteklenen Özellikler</label>
+                    <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem;">
+                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <li>✅ <strong>Video Formatları:</strong> MP4, AVI, MOV, MKV, WebM, FLV</li>
+                            <li>✅ <strong>Ses Formatları:</strong> MP3, WAV, FLAC, AAC, OGG, M4A</li>
+                            <li>✅ <strong>Çıktı Formatları:</strong> SRT, VTT, ASS, TXT, Gömülü Video</li>
+                            <li>✅ <strong>Kırmızı arka plan:</strong> Tüm altyazılar için özel stil</li>
+                            <li>✅ <strong>Çevrimdışı işleme:</strong> İnternet bağlantısı gerektirmez</li>
+                            <li>✅ <strong>GPU desteği:</strong> NVIDIA kartlarında hızlandırma</li>
+                        </ul>
                     </div>
                 </div>
 
@@ -421,12 +179,10 @@
                     <label class="form-label">Sistem Gereksinimleri</label>
                     <div style="background: var(--bg-glass); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem;">
                         <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">
-                            <li>Python 3.7+ gerekli paketlerle birlikte</li>
-                            <li>FFmpeg/FFprobe yüklü ve PATH'te</li>
+                            <li>Python 3.7+ ve gerekli paketler</li>
+                            <li>FFmpeg/FFprobe PATH'te yüklü</li>
                             <li>Minimum 4GB RAM (8GB önerilir)</li>
-                            <li>GPU ile CUDA desteği (isteğe bağlı)</li>
-                            <li><strong>TTS için:</strong> Ses sentezi için internet bağlantısı</li>
-                            <li><strong>Ses Kaydı için:</strong> Çalışır durumda bir mikrofon</li>
+                            <li>GPU: CUDA desteği (isteğe bağlı)</li>
                         </ul>
                     </div>
                 </div>
@@ -436,12 +192,10 @@
                     <label class="form-label">Performans İpuçları</label>
                     <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: var(--radius); padding: 1rem;">
                         <ul style="margin: 0; padding-left: 1.5rem; color: #c7d2fe; font-size: 0.875rem;">
-                            <li><strong>Temel Mod:</strong> Yalnızca hızlı altyazı oluşturma</li>
-                            <li><strong>TTS Modu:</strong> Ses sentezi için daha uzun işlem süresi</li>
-                            <li><strong>Edge TTS:</strong> Daha yüksek kalite, internet gerektirir</li>
-                            <li><strong>Google TTS:</strong> Daha hızlı, test için iyi</li>
-                            <li><strong>GPU:</strong> Önemli ölçüde daha hızlı transkripsiyon</li>
-                            <li><strong>Ses Kaydı:</strong> Mikrofon kalitesi ve ortam gürültüsü transkripsiyonu etkiler.</li>
+                            <li><strong>Model Boyutu:</strong> "tiny" en hızlı, "large" en doğru</li>
+                            <li><strong>GPU:</strong> Büyük dosyalarda önemli hız artışı</li>
+                            <li><strong>Ses Geliştirme:</strong> Kaliteyi artırır, süreyi uzatır</li>
+                            <li><strong>Formatlar:</strong> Sadece ihtiyacınız olanı seçin</li>
                         </ul>
                     </div>
                 </div>
@@ -457,7 +211,7 @@
             </div>
             
             <div class="file-list">
-                {% for file in files[:10] %}
+                {% for file in files %}
                 <div class="file-item">
                     <div class="file-info">
                         <div class="file-icon">
@@ -475,20 +229,13 @@
                     </a>
                 </div>
                 {% endfor %}
-                
-                {% if files|length > 10 %}
-                <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
-                    ... ve {{ files|length - 10 }} dosya daha
-                    <a href="{{ url_for('list_outputs') }}" class="btn btn-secondary" style="margin-left: 1rem;">Tümünü Görüntüle</a>
-                </div>
-                {% endif %}
             </div>
         </div>
         {% endif %}
 
         <!-- Footer -->
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
-            <p>Profesyonel Altyazı Aracı • OpenAI Whisper ve Gelişmiş TTS tarafından desteklenmektedir • %100 Çevrimdışı İşleme</p>
+            <p>🎬 Altyazı Oluşturucu • OpenAI Whisper ile güçlendirilmiştir • Kırmızı Arka Plan Stili</p>
             <p style="margin-top: 0.5rem;">Gizliliğiniz korunur - tüm işlemler cihazınızda yerel olarak gerçekleşir</p>
         </footer>
     </div>

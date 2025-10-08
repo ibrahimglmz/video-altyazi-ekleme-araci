@@ -1,24 +1,15 @@
 #!/usr/bin/env python3
 """
-Offline Professional Video Subtitle Generator (No API)
-=====================================================
+Simple Offline Video Subtitle Generator
+=======================================
 
-A high-performance, offline CLI tool that:
-- Transcribes audio/video locally with optimized Whisper models
-- Generates SRT/VTT/TXT/ASS subtitles with advanced formatting
-- Embeds hard subtitles into videos with style-preserving techniques
+A streamlined tool for generating subtitles with red background style only.
+Features:
+- Transcribes audio/video locally with Whisper models
+- Generates SRT/VTT/TXT/ASS subtitles with red background style
+- Embeds subtitles into videos
 - Supports GPU acceleration (when available)
-- Includes intelligent audio preprocessing
-- Features comprehensive error handling
-- Offers batch processing with progress tracking
-
-Requirements:
-  pip install openai-whisper pydub tqdm faster-whisper torchaudio
-  # Requires ffmpeg/ffprobe in PATH
-
-Usage examples:
-  python pro_subtitle_tool.py -i input.mp4 --formats video,ass --style cinema --gpu
-  python pro_subtitle_tool.py -i media_folder --batch --language tr --formats srt,vtt --model large
+- Includes audio preprocessing
 """
 
 import argparse
@@ -69,11 +60,9 @@ class ProgressTracker:
         if self.callback:
             self.callback(progress, message)
 
-
 # Hardware acceleration settings
 USE_GPU = False
 COMPUTE_TYPE = "float16"  # float16 or int8 for faster-whisper
-
 
 class LanguageCode(str, Enum):
     AUTO = "auto"
@@ -90,16 +79,8 @@ class LanguageCode(str, Enum):
     ZH = "zh"
     AR = "ar"
 
-
 class SubtitleStyle(str, Enum):
-    DEFAULT = "default"
-    BOLD = "bold"
-    ELEGANT = "elegant"
-    CINEMA = "cinema"
-    MODERN = "modern"
-    MINIMAL = "minimal"
-    TERMINAL = "terminal"
-
+    RED_BACKGROUND = "red_background"
 
 @dataclass
 class SubtitleConfig:
@@ -119,7 +100,6 @@ class SubtitleConfig:
     line_spacing: int
     wrap_style: int  # 0=smart, 1=end-of-line, 2=no-word-wrap, 3=smart-with-bottom
 
-
 # -----------------------------
 # Utilities
 # -----------------------------
@@ -133,7 +113,6 @@ def get_system_fonts() -> List[str]:
         return ["Helvetica", "Arial", "Menlo", "Times New Roman"]
     else:  # Linux and others
         return ["DejaVu Sans", "Liberation Sans", "Arial", "FreeSans"]
-
 
 def run(cmd: List[str], check: bool = True, capture: bool = True, timeout: int = 300) -> subprocess.CompletedProcess:
     """Run command with better error handling and timeout"""
@@ -150,7 +129,6 @@ def run(cmd: List[str], check: bool = True, capture: bool = True, timeout: int =
         return proc
     except subprocess.TimeoutExpired:
         raise RuntimeError(f"Command timed out: {' '.join(cmd)}")
-
 
 def ffprobe_info(path: Path) -> Dict[str, Any]:
     """Get detailed media info with ffprobe"""
@@ -171,7 +149,6 @@ def ffprobe_info(path: Path) -> Dict[str, Any]:
     except json.JSONDecodeError:
         return {}
 
-
 def is_video(path: Path) -> bool:
     """Check if file is a video based on extension and content"""
     ext_check = path.suffix.lower() in VIDEO_EXTS
@@ -181,7 +158,6 @@ def is_video(path: Path) -> bool:
     # Additional content check
     info = ffprobe_info(path)
     return any(s.get('codec_type') == 'video' for s in info.get('streams', []))
-
 
 def is_audio(path: Path) -> bool:
     """Check if file is audio based on extension and content"""
@@ -193,7 +169,6 @@ def is_audio(path: Path) -> bool:
     streams = info.get('streams', [])
     return any(s.get('codec_type') == 'audio' for s in streams) or len(streams) == 0
 
-
 def hex_to_ass(hex_color: str, alpha: str = "00") -> str:
     """Convert #RRGGBB to ASS format &HAABBGGRR"""
     h = hex_color.lstrip('#')
@@ -201,7 +176,6 @@ def hex_to_ass(hex_color: str, alpha: str = "00") -> str:
         h = ''.join([c * 2 for c in h])
     r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
     return f"&H{alpha}{b:02X}{g:02X}{r:02X}"
-
 
 def srt_time(seconds: float) -> str:
     """Convert seconds to SRT timestamp format"""
@@ -212,7 +186,6 @@ def srt_time(seconds: float) -> str:
     milliseconds = int((td.total_seconds() % 1) * 1000)
     return f"{hours:02d}:{minutes:02d}:{seconds:02d},{milliseconds:03d}"
 
-
 def vtt_time(seconds: float) -> str:
     """Convert seconds to VTT timestamp format"""
     td = timedelta(seconds=seconds)
@@ -221,7 +194,6 @@ def vtt_time(seconds: float) -> str:
     minutes, seconds = divmod(remainder, 60)
     milliseconds = int((td.total_seconds() % 1) * 1000)
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}.{milliseconds:03d}"
-
 
 def smart_split(text: str, max_chars: int) -> List[str]:
     """Intelligently split text into lines respecting word boundaries"""
@@ -266,7 +238,6 @@ def smart_split(text: str, max_chars: int) -> List[str]:
 
     return lines
 
-
 def estimate_transcription_time(duration: float, model_size: str) -> float:
     """Estimate transcription time based on duration and model size"""
     # Approximate factors (seconds of processing per second of audio)
@@ -282,152 +253,33 @@ def estimate_transcription_time(duration: float, model_size: str) -> float:
     factor = factors.get(model_size.lower(), 1.5)
     return duration * factor
 
-
 # -----------------------------
-# Style Presets
+# Style Configuration
 # -----------------------------
 
-def style_preset(style: SubtitleStyle) -> SubtitleConfig:
-    """Create style configuration based on preset"""
+def style_preset() -> SubtitleConfig:
+    """Create red background style configuration"""
     system_fonts = get_system_fonts()
     base_font = system_fonts[0] if system_fonts else "Arial"
 
-    if style == SubtitleStyle.BOLD:
-        return SubtitleConfig(
-            font_name=base_font,
-            font_size=28,
-            font_color="#FFFFFF",
-            outline_color="#000000",
-            shadow_color="#000000",
-            background_color="#222222",
-            background_opacity=0.85,
-            outline_width=3,
-            shadow_offset=2,
-            alignment=2,  # Center
-            margin_vertical=40,
-            margin_horizontal=30,
-            max_chars_per_line=42,
-            line_spacing=5,
-            wrap_style=0  # Smart
-        )
-
-    elif style == SubtitleStyle.ELEGANT:
-        font = "Times New Roman" if "Times New Roman" in system_fonts else base_font
-        return SubtitleConfig(
-            font_name=font,
-            font_size=26,
-            font_color="#F5F5DC",  # Beige
-            outline_color="#2F2F2F",
-            shadow_color="#1A1A1A",
-            background_color="#2F2F2F",
-            background_opacity=0.7,
-            outline_width=1,
-            shadow_offset=1,
-            alignment=2,
-            margin_vertical=50,
-            margin_horizontal=60,
-            max_chars_per_line=45,
-            line_spacing=8,
-            wrap_style=0
-        )
-
-    elif style == SubtitleStyle.CINEMA:
-        return SubtitleConfig(
-            font_name="Arial",
-            font_size=32,
-            font_color="#FFD700",  # Gold
-            outline_color="#000000",
-            shadow_color="#000000",
-            background_color="#000000",
-            background_opacity=0.9,
-            outline_width=2,
-            shadow_offset=3,
-            alignment=2,
-            margin_vertical=30,
-            margin_horizontal=20,
-            max_chars_per_line=38,
-            line_spacing=4,
-            wrap_style=3  # Smart with bottom alignment
-        )
-
-    elif style == SubtitleStyle.MODERN:
-        font = "Roboto" if "Roboto" in system_fonts else "Arial"
-        return SubtitleConfig(
-            font_name=font,
-            font_size=24,
-            font_color="#00FF41",  # Matrix green
-            outline_color="#1A1A1A",
-            shadow_color="#0A0A0A",
-            background_color="#1A1A1A",
-            background_opacity=0.7,
-            outline_width=1,
-            shadow_offset=2,
-            alignment=2,
-            margin_vertical=35,
-            margin_horizontal=40,
-            max_chars_per_line=50,
-            line_spacing=6,
-            wrap_style=0
-        )
-
-    elif style == SubtitleStyle.MINIMAL:
-        return SubtitleConfig(
-            font_name=base_font,
-            font_size=20,
-            font_color="#FFFFFF",
-            outline_color="#000000",
-            shadow_color="#000000",
-            background_color="#000000",
-            background_opacity=0.5,
-            outline_width=0,
-            shadow_offset=0,
-            alignment=2,
-            margin_vertical=20,
-            margin_horizontal=10,
-            max_chars_per_line=55,
-            line_spacing=3,
-            wrap_style=1  # End of line
-        )
-
-    elif style == SubtitleStyle.TERMINAL:
-        font = "Courier New" if "Courier New" in system_fonts else "Monospace"
-        return SubtitleConfig(
-            font_name=font,
-            font_size=22,
-            font_color="#00FF00",  # Green
-            outline_color="#003300",
-            shadow_color="#001100",
-            background_color="#000000",
-            background_opacity=0.8,
-            outline_width=0,
-            shadow_offset=1,
-            alignment=1,  # Left
-            margin_vertical=25,
-            margin_horizontal=50,
-            max_chars_per_line=60,
-            line_spacing=2,
-            wrap_style=1
-        )
-
-    # Default style
+    # Red background style matching the provided image
     return SubtitleConfig(
-        font_name=base_font,
-        font_size=24,
-        font_color="#FFFFFF",
-        outline_color="#000000",
+        font_name="Arial Bold" if "Arial" in system_fonts else base_font,
+        font_size=32,
+        font_color="#FFFFFF",  # White text
+        outline_color="#000000",  # Black outline for clarity
         shadow_color="#000000",
-        background_color="#000000",
-        background_opacity=0.7,
-        outline_width=2,
+        background_color="#DC143C",  # Crimson red background
+        background_opacity=1.0,  # Fully opaque background
+        outline_width=1,
         shadow_offset=1,
-        alignment=2,
-        margin_vertical=30,
-        margin_horizontal=20,
-        max_chars_per_line=50,
-        line_spacing=5,
-        wrap_style=0
+        alignment=2,  # Center aligned
+        margin_vertical=25,
+        margin_horizontal=30,
+        max_chars_per_line=45,
+        line_spacing=4,
+        wrap_style=0  # Smart wrapping
     )
-
 
 # -----------------------------
 # Core Subtitle Generator
@@ -773,13 +625,13 @@ class OfflineSubtitleGenerator:
         print("[+] Embedding subtitles into video...")
         run(cmd, capture=False, timeout=900)  # 15 minute timeout for video processing
 
-    def process_one(self, src: Path, out_dir: Path, formats: List[str], style: SubtitleStyle,
+    def process_one(self, src: Path, out_dir: Path, formats: List[str], 
                     language: str, include_ts: bool) -> Dict[str, str]:
         """Process a single media file"""
         self.progress_tracker.update(1, f"Starting processing: {src.name}")
         
         out_dir.mkdir(parents=True, exist_ok=True)
-        cfg = style_preset(style)
+        cfg = style_preset()
 
         # Create output filename based on source name and timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -874,7 +726,6 @@ class OfflineSubtitleGenerator:
         self.progress_tracker.update(5, "Processing complete!")
         return written
 
-
 # -----------------------------
 # CLI Interface
 # -----------------------------
@@ -883,12 +734,12 @@ def parse_args() -> argparse.Namespace:
     """Parse command line arguments with improved help and defaults"""
     p = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="""Offline Professional Subtitle Generator (no API)
+        description="""Simple Offline Subtitle Generator
 
 Features:
 - Local processing with Whisper AI
+- Red background subtitle style only
 - Multiple output formats (SRT, VTT, ASS, TXT, embedded video)
-- Advanced subtitle styling
 - GPU acceleration support
 - Batch processing
 """)
@@ -899,9 +750,6 @@ Features:
                    help='Output directory (default: output)')
     p.add_argument('--formats', default='srt,video',
                    help='Comma-separated output formats: video,srt,vtt,ass,txt (default: srt,video)')
-    p.add_argument('--style', default='default',
-                   choices=[e.value for e in SubtitleStyle],
-                   help='Subtitle style preset (default: default)')
     p.add_argument('--language', default='auto',
                    help='Language code (auto, en, tr, etc.) or "auto" for detection')
     p.add_argument('--include-timestamps', action='store_true',
@@ -921,7 +769,6 @@ Features:
                    help='Enable verbose output')
 
     return p.parse_args()
-
 
 def collect_inputs(inp: Path, batch: bool) -> List[Path]:
     """Collect input files with validation"""
@@ -952,12 +799,10 @@ def collect_inputs(inp: Path, batch: bool) -> List[Path]:
 
         return [inp]
 
-
 def signal_handler(signum, frame):
     """Handle interrupt signals gracefully"""
     print("\n[!] Processing interrupted by user")
     sys.exit(1)
-
 
 def main():
     # Set up signal handlers
@@ -989,7 +834,7 @@ def main():
 
     print(f"\n[i] Processing {len(input_files)} file(s) with {args.model} model")
     print(f"[i] Output formats: {', '.join(formats)}")
-    print(f"[i] Style: {args.style}")
+    print(f"[i] Red background subtitle style")
     print(f"[i] Language: {args.language}\n")
     print(f"[i] GPU acceleration: {'enabled' if args.gpu else 'disabled'}")
     print(f"[i] Audio enhancement: {'enabled' if not args.no_audio_enhance else 'disabled'}")
@@ -1006,7 +851,6 @@ def main():
                 src=src,
                 out_dir=output_dir,
                 formats=formats,
-                style=SubtitleStyle(args.style),
                 language=args.language,
                 include_ts=args.include_timestamps
             )
@@ -1027,7 +871,6 @@ def main():
     print(f"\nCompleted: {success_count} of {len(input_files)} files processed successfully")
     print(f"Total processing time: {total_duration.total_seconds():.1f} seconds")
     print(f"Output directory: {output_dir.absolute()}")
-
 
 if __name__ == '__main__':
     main()
