@@ -1,10 +1,10 @@
-# 🎬 Altyazı Oluşturucu - Kırmızı Arka Plan Stili
+# 🎬 Altyazı Oluşturucu - Grunge Fırça Darbesi Stili
 
 <div align="center">
 
-**AI destekli, tamamen çevrimdışı altyazı oluşturma aracı**
+**AI destekli, tamamen çevrimişdışı altyazı oluşturma aracı**
 
-Kırmızı arka planlı beyaz metinlerle videolarınıza profesyonel altyazılar ekleyin!
+Grunge fırça darbesi tarzında dinamik arka planlarla videolarınıza artistik altyazılar ekleyin!
 
 ![GitHub](https://img.shields.io/badge/GitHub-Açık_Kaynak-green)
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
@@ -17,11 +17,12 @@ Kırmızı arka planlı beyaz metinlerle videolarınıza profesyonel altyazılar
 
 ## ✨ Özellikler
 
-### 🎯 **Tek Stil, Mükemmel Sonuç**
-- **Kırmızı arka plan (#DC143C) + Beyaz metin** - Görünür ve profesyonel
-- **Arial Bold font** - Net ve okunaklı
-- **Merkezi hizalama** - Estetik görünüm
-- **Otomatik satır bölme** - Akıllı metin düzenleme
+### 🎨 **Grunge Fırça Darbesi Stili**
+- **El ile boyanmış görünüm** - Akrilik fırça darbesi efekti
+- **Dinamik boyutlandırma** - Metin uzunluğuna göre esneyen arka plan
+- **Yuvarlak sans-serif font** - Okunaklı ve estetik
+- **Düzensiz kenarlar** - Grunge doku ile organik görünüm
+- **Kırmızı grunge doku** - Transparanlık ile profesyonel görsel
 
 ### 🚀 **Güçlü AI İşleme**
 - **OpenAI Whisper** entegrasyonu
@@ -94,22 +95,24 @@ Tüm gerekli paketler `.venv/` klasöründe yüklü:
 
 ---
 
-## 🎨 Altyazı Stilini Önizleme
+## 🎨 Grunge Altyazı Stilini Önizleme
 
 ```
-┌─────────────────────────────────────┐
-│                                     │
-│     valizler alınmayacak!           │
-│     Kırmızı arka planlı beyaz metin │
-│                                     │
-└─────────────────────────────────────┘
+    ░░▒▒▓▓███████████████▓▓▒▒░░
+  ░▒▓██                          ██▓▒░
+ ▒▓█      valizler alınmayacak!       █▓▒
+░▓█        Grunge fırça darbesi        █▓░
+ ▒▓█                                █▓▒
+  ░▒▓██                          ██▓▒░
+    ░░▒▒▓▓███████████████▓▓▒▒░░
 ```
 
-**Stil Özellikleri:**
-- **Renk**: Kırmızı arka plan (#DC143C), Beyaz metin (#FFFFFF)
-- **Font**: Arial Bold, 32px
-- **Konumlandırma**: Alt merkezde, uygun kenar boşlukları
-- **Özellikler**: Tam opaklık, siyah kontur
+**Grunge Stil Özellikleri:**
+- **Dokulu Arka Plan**: Kırmızı grunge doku ile el ile boyanmış efekt
+- **Font**: Yuvarlak sans-serif (Avenir/Arial Rounded), 32px, beyaz renk
+- **Dünamic Boyutlandırma**: Metin uzunluğuna göre otomatik genişleme
+- **Düzensiz Kenarlar**: Dalgalı, organik fırça darbesi kenarları
+- **Transparanlık**: Sadece fırça darbesi alanı görünür
 
 ---
 

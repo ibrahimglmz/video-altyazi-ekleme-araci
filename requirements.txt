@@ -7,6 +7,9 @@ torchaudio>=0.13.0
 # Audio/Video Processing
 ffmpeg-python>=0.2.0
 
+# Image Processing for Grunge Subtitles
+Pillow>=9.0.0
+
 # Web Framework
 Flask>=2.3.0
 Werkzeug>=2.3.0

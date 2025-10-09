@@ -25,8 +25,13 @@ subtitle_generator = None
 def get_subtitle_generator():
     global subtitle_generator
     if subtitle_generator is None:
-        subtitle_generator = OfflineSubtitleGenerator(whisper_model="base", use_gpu=False, enhance_audio=True)
-        print("[INFO] OfflineSubtitleGenerator başlatıldı.")
+        subtitle_generator = OfflineSubtitleGenerator(
+            whisper_model="base", 
+            use_gpu=False, 
+            enhance_audio=True, 
+            style=SubtitleStyle.GRUNGE_BRUSH
+        )
+        print("[INFO] OfflineSubtitleGenerator başlatıldı (Grunge stil).")
     return subtitle_generator
 
 @app.route('/')
@@ -172,5 +177,5 @@ def clear_files():
 
 if __name__ == '__main__':
     print("[INFO] Flask uygulaması başlatılıyor...")
-    app.run(debug=True, host="0.0.0.0", port=5214)
+    app.run(debug=True, host="0.0.0.0", port=5113)
     print("[INFO] Flask uygulaması kapatıldı.")

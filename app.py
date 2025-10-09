@@ -28,6 +28,14 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timedelta
 import platform
 
+# Import grunge subtitle generator
+try:
+    from grunge_subtitle_generator import GrungeSubtitleGenerator
+    GRUNGE_AVAILABLE = True
+except ImportError:
+    GRUNGE_AVAILABLE = False
+    print("[!] Grunge subtitle generator not available. Install Pillow: pip install Pillow")
+
 # Suppress unnecessary warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -81,6 +89,7 @@ class LanguageCode(str, Enum):
 
 class SubtitleStyle(str, Enum):
     RED_BACKGROUND = "red_background"
+    GRUNGE_BRUSH = "grunge_brush"
 
 @dataclass
 class SubtitleConfig:
@@ -286,13 +295,21 @@ def style_preset() -> SubtitleConfig:
 # -----------------------------
 
 class OfflineSubtitleGenerator:
-    def __init__(self, whisper_model: str = "base", enhance_audio: bool = True, use_gpu: bool = False):
+    def __init__(self, whisper_model: str = "base", enhance_audio: bool = True, use_gpu: bool = False, 
+                 style: SubtitleStyle = SubtitleStyle.GRUNGE_BRUSH):
         self.model_name = whisper_model
         self.enhance_audio = enhance_audio
         self.use_gpu = use_gpu
+        self.style = style
         self._model = None
         self._processor = None
         self.progress_tracker = ProgressTracker()
+        
+        # Initialize grunge generator if needed
+        if self.style == SubtitleStyle.GRUNGE_BRUSH and GRUNGE_AVAILABLE:
+            self.grunge_generator = GrungeSubtitleGenerator()
+        else:
+            self.grunge_generator = None
 
         if not shutil.which("ffmpeg"):
             raise RuntimeError("ffmpeg not found in PATH. Please install ffmpeg.")
@@ -583,6 +600,99 @@ class OfflineSubtitleGenerator:
                 full_text = " ".join(seg['text'].strip() for seg in segments)
                 f.write(full_text)
 
+    def embed_grunge_subs(self, video: Path, segments: List[Dict[str, Any]], out_video: Path, out_dir: Path) -> str:
+        """Embed grunge-style subtitles directly into video using overlay filter"""
+        if not self.grunge_generator:
+            raise RuntimeError("Grunge subtitle generator not available")
+            
+        self.progress_tracker.update(4, "Creating grunge subtitle overlays...")
+        
+        # Get video dimensions for proper scaling
+        video_info = ffprobe_info(video)
+        video_width = 1920  # Default
+        video_height = 1080  # Default
+        
+        if video_info and 'streams' in video_info:
+            for stream in video_info['streams']:
+                if stream.get('codec_type') == 'video':
+                    video_width = int(stream.get('width', 1920))
+                    video_height = int(stream.get('height', 1080))
+                    break
+        
+        # Create grunge backgrounds for each segment
+        grunge_dir = out_dir / "grunge_assets"
+        grunge_dir.mkdir(exist_ok=True)
+        
+        # Generate all subtitle images first
+        valid_segments = []
+        for i, seg in enumerate(segments):
+            text = str(seg['text']).strip().replace('\n', ' ')
+            if not text:
+                continue
+                
+            # Create grunge subtitle image with video dimensions
+            img_path = grunge_dir / f"subtitle_{i:04d}.png"
+            self.grunge_generator.create_subtitle_with_background(
+                text, str(img_path), video_width, video_height
+            )
+            
+            if img_path.exists():
+                valid_segments.append((i, seg, img_path))
+        
+        if not valid_segments:
+            raise RuntimeError("No subtitle segments to embed")
+            
+        # Build FFmpeg command with simplified approach
+        # We'll process each subtitle one by one and chain them
+        
+        # Start with original video
+        current_input = video
+        temp_videos = []
+        
+        for idx, (seg_idx, seg, img_path) in enumerate(valid_segments):
+            start_time = float(seg['start'])
+            end_time = float(seg['end'])
+            
+            # Create temporary output for this overlay
+            temp_output = grunge_dir / f"temp_video_{idx:04d}.mp4"
+            temp_videos.append(temp_output)
+            
+            # Build FFmpeg command for single overlay
+            # Position subtitle at bottom center with proper margin
+            cmd = [
+                "ffmpeg", "-y",
+                "-i", str(current_input),  # Video input
+                "-i", str(img_path),       # Subtitle image input
+                "-filter_complex", 
+                f"[0:v][1:v]overlay=(W-w)/2:(H-h)*0.9:enable='between(t,{start_time},{end_time})'[vout]",
+                "-map", "[vout]",
+                "-map", "0:a",  # Copy audio
+                "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                "-c:a", "copy",
+                str(temp_output)
+            ]
+            
+            print(f"[+] Embedding subtitle {idx+1}/{len(valid_segments)}...")
+            run(cmd, capture=False, timeout=900)
+            
+            # Use this output as input for next iteration
+            current_input = temp_output
+        
+        # Move final result to output location
+        if temp_videos:
+            final_temp = temp_videos[-1]
+            if final_temp.exists():
+                import shutil
+                shutil.move(str(final_temp), str(out_video))
+                
+                # Clean up intermediate temp files
+                for temp_video in temp_videos[:-1]:
+                    if temp_video.exists():
+                        temp_video.unlink()
+        
+        print(f"[+] Grunge subtitles embedded successfully: {out_video}")
+        return str(out_video)
+
     def embed_subs(self, video: Path, subtitle_path: Path, out_video: Path, cfg: SubtitleConfig):
         """Embed subtitles into video using advanced ffmpeg filters"""
         self.progress_tracker.update(4, "Embedding subtitles into video...")
@@ -709,17 +819,23 @@ class OfflineSubtitleGenerator:
         if 'video' in formats and is_video(src):
             out_video = out_dir / f"{stem}_subtitled{src.suffix.lower()}"
 
-            # Use ASS if available, otherwise SRT
-            subtitle_path = written.get('ass') or written.get('srt')
-            if not subtitle_path:
-                srt_path = out_dir / f"{stem}.srt"
-                self.write_srt(segments, cfg, srt_path)
-                written['srt'] = str(srt_path)
-                subtitle_path = srt_path
-
             try:
-                self.embed_subs(src, Path(subtitle_path), out_video, cfg)
-                written['video'] = str(out_video)
+                if self.style == SubtitleStyle.GRUNGE_BRUSH and self.grunge_generator:
+                    # Use grunge style subtitle embedding
+                    self.embed_grunge_subs(src, segments, out_video, out_dir)
+                    written['video'] = str(out_video)
+                    print("[+] Grunge-style subtitles embedded successfully")
+                else:
+                    # Use traditional ASS/SRT subtitle embedding
+                    subtitle_path = written.get('ass') or written.get('srt')
+                    if not subtitle_path:
+                        srt_path = out_dir / f"{stem}.srt"
+                        self.write_srt(segments, cfg, srt_path)
+                        written['srt'] = str(srt_path)
+                        subtitle_path = srt_path
+                    
+                    self.embed_subs(src, Path(subtitle_path), out_video, cfg)
+                    written['video'] = str(out_video)
             except Exception as e:
                 raise RuntimeError(f"Failed to embed subtitles: {str(e)}")
 
@@ -738,7 +854,9 @@ def parse_args() -> argparse.Namespace:
 
 Features:
 - Local processing with Whisper AI
-- Red background subtitle style only
+- Grunge brush stroke subtitle style with dynamic text sizing
+- Red grunge textured backgrounds with irregular edges
+- Rounded sans-serif fonts for better readability
 - Multiple output formats (SRT, VTT, ASS, TXT, embedded video)
 - GPU acceleration support
 - Batch processing
